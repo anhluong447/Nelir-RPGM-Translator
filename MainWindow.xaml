@@ -209,14 +209,14 @@
                     <!-- Context Menu -->
                     <DataGrid.ContextMenu>
                         <ContextMenu>
-                            <MenuItem Header="Sao chép nội dung Gốc (RAW)" Command="{Binding DataContext.CopyRawCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                            <MenuItem Header="Sao chép nội dung Gốc (RAW)" Command="{Binding Path=PlacementTarget.DataContext.CopyRawCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
                                       CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=ContextMenu}, Path=PlacementTarget.SelectedItem}"/>
-                            <MenuItem Header="Sao chép bản dịch MTL" Command="{Binding DataContext.CopyMtlCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                            <MenuItem Header="Sao chép bản dịch MTL" Command="{Binding Path=PlacementTarget.DataContext.CopyMtlCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
                                       CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=ContextMenu}, Path=PlacementTarget.SelectedItem}"/>
                             <Separator/>
-                            <MenuItem Header="Áp dụng MTL sang Dịch" Command="{Binding DataContext.ApplyMtlAsTranslationCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                            <MenuItem Header="Áp dụng MTL sang Dịch" Command="{Binding Path=PlacementTarget.DataContext.ApplyMtlAsTranslationCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
                                       CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=ContextMenu}, Path=PlacementTarget.SelectedItem}"/>
-                            <MenuItem Header="Xoá bản dịch dòng này" Command="{Binding DataContext.ClearTranslationCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                            <MenuItem Header="Xoá bản dịch dòng này" Command="{Binding Path=PlacementTarget.DataContext.ClearTranslationCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
                                       CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=ContextMenu}, Path=PlacementTarget.SelectedItem}"/>
                         </ContextMenu>
                     </DataGrid.ContextMenu>

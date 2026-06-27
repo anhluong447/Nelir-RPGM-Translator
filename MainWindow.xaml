@@ -52,8 +52,8 @@
                             Command="{Binding ImportMtlCommand}" IsEnabled="{Binding IsProjectLoaded}" Margin="0,0,10,0"/>
                     <Button Content="💾 Xuất flat JSON" Style="{StaticResource ButtonSecondary}"
                             Command="{Binding ExportFlatCommand}" IsEnabled="{Binding IsProjectLoaded}" Margin="0,0,10,0"/>
-                    <Button Content="⚙️ Xuất Game Data (Ghi)" Style="{StaticResource ButtonSecondary}"
-                            Command="{Binding ExportGameCommand}" IsEnabled="{Binding IsProjectLoaded}"/>
+                    <Button Content="🔍 Tìm &amp; Thay thế" Style="{StaticResource ButtonSecondary}"
+                            Click="FindReplaceButton_Click" IsEnabled="{Binding IsProjectLoaded}"/>
                     
                     <!-- Search Box -->
                     <Border BorderBrush="{StaticResource BorderDefault}" BorderThickness="1" 
@@ -158,6 +158,25 @@
                             <Setter Property="Background" Value="{Binding RowType, Converter={StaticResource RowTypeColorConverter}}"/>
                         </Style>
                     </DataGrid.RowStyle>
+
+                    <!-- Grouping Style for separating files -->
+                    <DataGrid.GroupStyle>
+                        <GroupStyle>
+                            <GroupStyle.HeaderTemplate>
+                                <DataTemplate>
+                                    <Border Background="{StaticResource BgSunken}" BorderBrush="{StaticResource BorderDefault}" BorderThickness="0,1,0,1" Padding="12,6">
+                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                            <TextBlock Text="📁" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                                            <TextBlock Text="{Binding Name}" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" VerticalAlignment="Center"/>
+                                            <TextBlock Text=" (" Foreground="{StaticResource TextTertiary}" VerticalAlignment="Center"/>
+                                            <TextBlock Text="{Binding ItemCount}" Foreground="{StaticResource TextTertiary}" VerticalAlignment="Center"/>
+                                            <TextBlock Text=" dòng)" Foreground="{StaticResource TextTertiary}" VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </GroupStyle.HeaderTemplate>
+                        </GroupStyle>
+                    </DataGrid.GroupStyle>
                     
                     <DataGrid.Columns>
                         <!-- Index Column -->
@@ -171,7 +190,7 @@
                         </DataGridTextColumn>
 
                         <!-- Original Text / Raw Column -->
-                        <DataGridTemplateColumn Header="Nội dung gốc (RAW)" Width="2*" IsReadOnly="True">
+                        <DataGridTemplateColumn Header="Nội dung gốc (RAW)" Width="2*" MinWidth="300" IsReadOnly="True">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <TextBlock Text="{Binding DisplayRawText}" Style="{StaticResource TextBody}" TextWrapping="Wrap"/>
@@ -180,7 +199,7 @@
                         </DataGridTemplateColumn>
 
                         <!-- MTL Reference Column -->
-                        <DataGridTemplateColumn Header="Bản dịch máy (MTL)" Width="1.5*" IsReadOnly="True">
+                        <DataGridTemplateColumn Header="Bản dịch máy (MTL)" Width="1.5*" MinWidth="250" IsReadOnly="True">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <TextBlock Text="{Binding MtlText}" Style="{StaticResource TextBodySecondary}" TextWrapping="Wrap"/>
@@ -189,7 +208,7 @@
                         </DataGridTemplateColumn>
 
                         <!-- Edit / Translation Column -->
-                        <DataGridTemplateColumn Header="Bản dịch chính thức (TRANSLATED)" Width="2*">
+                        <DataGridTemplateColumn Header="Bản dịch chính thức (TRANSLATED)" Width="2*" MinWidth="300">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <TextBlock Text="{Binding TranslationText}" Style="{StaticResource TextBody}" TextWrapping="Wrap" MinHeight="16"/>

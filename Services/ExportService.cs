@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -17,6 +17,29 @@ namespace Nelir.Services
             foreach (var row in projectState.AllRows)
             {
                 if (row.RowType != RowType.SectionHeader && !string.IsNullOrEmpty(row.TranslationText))
+                {
+                    dict[row.UniqueKey] = row.TranslationText;
+                }
+            }
+
+            var options = new JsonSerializerOptions { WriteIndented = true };
+            string content = JsonSerializer.Serialize(dict, options);
+            
+            string? directory = Path.GetDirectoryName(outputPath);
+            if (!string.IsNullOrEmpty(directory))
+            {
+                Directory.CreateDirectory(directory);
+            }
+            File.WriteAllText(outputPath, content);
+        }
+
+        // 1.1 Export flat translation dictionary for a single file: Key -> TranslationText
+        public void ExportFileFlatJson(ProjectState projectState, string fileName, string outputPath)
+        {
+            var dict = new Dictionary<string, string>();
+            foreach (var row in projectState.AllRows)
+            {
+                if (row.SourceFile == fileName && row.RowType != RowType.SectionHeader && !string.IsNullOrEmpty(row.TranslationText))
                 {
                     dict[row.UniqueKey] = row.TranslationText;
                 }

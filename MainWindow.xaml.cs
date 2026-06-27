@@ -1,4 +1,4 @@
-﻿using System.Windows;
+using System.Windows;
 using System.Windows.Input;
 using Nelir.Models;
 using Nelir.ViewModels;
@@ -41,6 +41,11 @@ namespace Nelir
                     ShowFindReplace(showReplace: true);
                 }
             }
+        }
+
+        private void FindReplaceButton_Click(object sender, RoutedEventArgs e)
+        {
+            ShowFindReplace(showReplace: false);
         }
 
         private void ShowFindReplace(bool showReplace)

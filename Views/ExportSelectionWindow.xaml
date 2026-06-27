@@ -1,0 +1,79 @@
+<Window x:Class="Nelir.Views.ExportSelectionWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="Xuất Dữ Liệu Bản Dịch JSON" Height="480" Width="520"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize"
+        Background="{StaticResource BgSurface}"
+        Foreground="{StaticResource TextPrimary}">
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <!-- 0. Header Description -->
+            <RowDefinition Height="Auto"/>
+            <!-- 1. Destination Folder Selector -->
+            <RowDefinition Height="Auto"/>
+            <!-- 2. Select All and Filter row -->
+            <RowDefinition Height="Auto"/>
+            <!-- 3. List of Files -->
+            <RowDefinition Height="*"/>
+            <!-- 4. Footer Buttons -->
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- 0. Header Description -->
+        <TextBlock Grid.Row="0" Text="Chọn các tệp cần xuất ra định dạng JSON phẳng (UniqueKey -> Bản dịch). Các tệp đã có bản dịch được tự động chọn mặc định."
+                   Style="{StaticResource TextCaption}" TextWrapping="Wrap" Margin="0,0,0,15"/>
+
+        <!-- 1. Destination Folder Selector -->
+        <Border Grid.Row="1" Background="{StaticResource BgSunken}" BorderBrush="{StaticResource BorderDefault}" 
+                BorderThickness="1" CornerRadius="{StaticResource RadiusMd}" Padding="12" Margin="0,0,0,15">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Text="Thư mục xuất dữ liệu:" 
+                           Style="{StaticResource TextLabel}" Margin="0,0,0,6"/>
+                <TextBox x:Name="ExportPathTextBox" Grid.Row="1" Grid.Column="0" IsReadOnly="True"
+                         Style="{StaticResource InputDefault}" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                <Button Grid.Row="1" Grid.Column="1" Content="Chọn..." Style="{StaticResource ButtonSecondary}"
+                        Padding="12,6" Click="BrowseFolder_Click" VerticalAlignment="Center"/>
+            </Grid>
+        </Border>
+
+        <!-- 2. Select All Checkbox -->
+        <CheckBox x:Name="SelectAllCheckBox" Grid.Row="2" Content="Chọn tất cả các tệp" 
+                  FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" 
+                  Margin="4,0,0,10" Checked="SelectAllCheckBox_Checked" Unchecked="SelectAllCheckBox_Unchecked"/>
+
+        <!-- 3. List of Files -->
+        <Border Grid.Row="3" Background="{StaticResource BgSunken}" BorderBrush="{StaticResource BorderDefault}" 
+                BorderThickness="1" CornerRadius="{StaticResource RadiusMd}" Padding="8" Margin="0,0,0,20">
+            <ListBox x:Name="FilesListBox" BorderThickness="0" Background="Transparent" 
+                     ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <CheckBox IsChecked="{Binding IsSelected}" Margin="4,4,4,4" Checked="CheckBox_CheckChanged" Unchecked="CheckBox_CheckChanged">
+                            <TextBlock Text="{Binding DisplayText}" Style="{StaticResource TextBody}" VerticalAlignment="Center"/>
+                        </CheckBox>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </Border>
+
+        <!-- 4. Footer Buttons -->
+        <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Right">
+            <Button Content="Hủy bỏ" Width="100" Height="34" Style="{StaticResource ButtonSecondary}" 
+                    Margin="0,0,10,0" Click="Cancel_Click"/>
+            <Button Content="Xuất JSON" Width="120" Height="34" Style="{StaticResource ButtonPrimary}" 
+                    Click="Export_Click"/>
+        </StackPanel>
+    </Grid>
+</Window>

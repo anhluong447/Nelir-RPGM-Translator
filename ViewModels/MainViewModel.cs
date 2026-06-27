@@ -13,6 +13,7 @@ using CommunityToolkit.Mvvm.Input;
 using Microsoft.Win32;
 using Nelir.Models;
 using Nelir.Services;
+using Nelir.Views;
 using System.Text.RegularExpressions;
 
 namespace Nelir.ViewModels
@@ -71,10 +72,14 @@ namespace Nelir.ViewModels
             // Setup collection view for filtering and sorting
             RowsView = CollectionViewSource.GetDefaultView(_project.AllRows);
             RowsView.Filter = FilterRows;
+            RowsView.GroupDescriptions.Add(new PropertyGroupDescription(nameof(TranslationRow.SourceFile)));
 
             // Load last settings if available
             var settings = _settingsService.CurrentSettings;
-            // Folder loading is deferred. The application will start clean.
+            if (!string.IsNullOrEmpty(settings.LastDataFolder) && Directory.Exists(settings.LastDataFolder))
+            {
+                _ = LoadFolderAsync(settings.LastDataFolder);
+            }
         }
 
         partial void OnSelectedFileChanged(FileNode? value)
@@ -370,82 +375,19 @@ namespace Nelir.ViewModels
 
             try
             {
-                var dialog = new SaveFileDialog
-                {
-                    Filter = "JSON Files (*.json)|*.json",
-                    Title = "Export Translation Flat JSON",
-                    FileName = "translations.json"
-                };
+                var exportWindow = new ExportSelectionWindow(this, _exportService);
+                exportWindow.ShowDialog();
 
-                if (dialog.ShowDialog(Application.Current.MainWindow) == true)
+                // Clear dirty flags after export
+                foreach (var row in Project.AllRows)
                 {
-                    _exportService.ExportFlatJson(Project, dialog.FileName);
-                    
-                    // Save manually also clears dirty changes flags since they are safe
-                    foreach (var row in Project.AllRows)
-                    {
-                        row.IsDirty = false;
-                    }
-                    AutoSaveStatus = "Saved changes successfully";
-
-                    MessageBox.Show("Flat translation JSON exported successfully.", "Export Successful", MessageBoxButton.OK, MessageBoxImage.Information);
+                    row.IsDirty = false;
                 }
+                AutoSaveStatus = "Saved changes successfully";
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Lỗi khi xuất flat JSON: {ex.Message}\n\nStack Trace:\n{ex.StackTrace}", "Lỗi Hệ Thống", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
-
-        [RelayCommand]
-        private void ExportGame()
-        {
-            if (!IsProjectLoaded) return;
-
-            try
-            {
-                var dialog = new OpenFolderDialog
-                {
-                    Title = "Select Output Folder for Translated Game Files"
-                };
-
-                if (dialog.ShowDialog(Application.Current.MainWindow) == true)
-                {
-                    string outputDir = dialog.FolderName;
-
-                    if (outputDir.Equals(Project.DataFolderPath, StringComparison.OrdinalIgnoreCase))
-                    {
-                        var warningResult = MessageBox.Show(
-                            "Selecting the original 'data' folder may overwrite your raw game files. It is highly recommended to output to a separate directory. Proceed anyway?",
-                            "Warning: Overwrite Game Files",
-                            MessageBoxButton.YesNo,
-                            MessageBoxImage.Warning);
-
-                        if (warningResult == MessageBoxResult.No)
-                        {
-                            return;
-                        }
-                    }
-
-                    IsBusy = true;
-                    try
-                    {
-                        int filesWritten = _exportService.ExportToGameFiles(Project, outputDir);
-                        MessageBox.Show($"Successfully wrote translation back into {filesWritten} game files.", "Export Successful", MessageBoxButton.OK, MessageBoxImage.Information);
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show($"Failed to export: {ex.Message}", "Export Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                    }
-                    finally
-                    {
-                        IsBusy = false;
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Lỗi khi xuất Game Data: {ex.Message}\n\nStack Trace:\n{ex.StackTrace}", "Lỗi Hệ Thống", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"Lỗi khi mở hộp thoại xuất JSON: {ex.Message}\n\nStack Trace:\n{ex.StackTrace}", "Lỗi Hệ Thống", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 

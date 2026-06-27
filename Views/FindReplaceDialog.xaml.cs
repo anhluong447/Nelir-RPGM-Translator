@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -9,6 +9,7 @@ namespace Nelir.Views
     public partial class FindReplaceDialog : Window
     {
         private readonly DataGrid _dataGrid;
+        private bool _isInitializing = true;
 
         public FindReplaceDialog(DataGrid dataGrid, bool showReplace = true)
         {
@@ -16,14 +17,50 @@ namespace Nelir.Views
             _dataGrid = dataGrid;
             Owner = Window.GetWindow(_dataGrid);
 
+            _isInitializing = false;
+
             if (!showReplace)
             {
-                ReplaceLabel.Visibility = Visibility.Collapsed;
-                ReplaceTextBox.Visibility = Visibility.Collapsed;
-                ReplaceButton.Visibility = Visibility.Collapsed;
-                ReplaceAllButton.Visibility = Visibility.Collapsed;
-                Height = 175;
-                Title = "Find";
+                MainTabControl.SelectedIndex = 0;
+                Height = 210;
+                Title = "Tìm kiếm (Find)";
+            }
+            else
+            {
+                MainTabControl.SelectedIndex = 1;
+                Height = 270;
+                Title = "Thay thế (Replace)";
+            }
+        }
+
+        private void MainTabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (_isInitializing) return;
+
+            if (e.Source == MainTabControl)
+            {
+                if (MainTabControl.SelectedIndex == 0) // Find
+                {
+                    Height = 210;
+                    Title = "Tìm kiếm (Find)";
+                    // Sync text
+                    if (FindTextBox_Find != null && FindTextBox_Replace != null)
+                    {
+                        FindTextBox_Find.Text = FindTextBox_Replace.Text;
+                        MatchCaseCheckBox_Find.IsChecked = MatchCaseCheckBox_Replace.IsChecked;
+                    }
+                }
+                else if (MainTabControl.SelectedIndex == 1) // Replace
+                {
+                    Height = 270;
+                    Title = "Thay thế (Replace)";
+                    // Sync text
+                    if (FindTextBox_Find != null && FindTextBox_Replace != null)
+                    {
+                        FindTextBox_Replace.Text = FindTextBox_Find.Text;
+                        MatchCaseCheckBox_Replace.IsChecked = MatchCaseCheckBox_Find.IsChecked;
+                    }
+                }
             }
         }
 
@@ -34,7 +71,7 @@ namespace Nelir.Views
 
         private TranslationRow? FindNext(bool selectAndFocus)
         {
-            string searchText = FindTextBox.Text;
+            string searchText = MainTabControl.SelectedIndex == 0 ? FindTextBox_Find.Text : FindTextBox_Replace.Text;
             if (string.IsNullOrEmpty(searchText))
             {
                 return null;
@@ -49,7 +86,11 @@ namespace Nelir.Views
             int selectedIdx = _dataGrid.SelectedIndex;
             int start = (selectedIdx >= 0) ? selectedIdx + 1 : 0;
 
-            StringComparison comp = MatchCaseCheckBox.IsChecked == true 
+            bool isMatchCase = MainTabControl.SelectedIndex == 0 
+                ? MatchCaseCheckBox_Find.IsChecked == true 
+                : MatchCaseCheckBox_Replace.IsChecked == true;
+
+            StringComparison comp = isMatchCase 
                 ? StringComparison.Ordinal 
                 : StringComparison.OrdinalIgnoreCase;
 
@@ -80,7 +121,7 @@ namespace Nelir.Views
                 }
             }
 
-            MessageBox.Show("No matches found in the document.", "Search", MessageBoxButton.OK, MessageBoxImage.Information);
+            MessageBox.Show("Không tìm thấy kết quả phù hợp.", "Tìm kiếm", MessageBoxButton.OK, MessageBoxImage.Information);
             return null;
         }
 
@@ -109,11 +150,11 @@ namespace Nelir.Views
         {
             if (_dataGrid.SelectedItem is TranslationRow row && row.RowType != RowType.SectionHeader)
             {
-                string searchText = FindTextBox.Text;
-                string replaceText = ReplaceTextBox.Text;
+                string searchText = FindTextBox_Replace.Text;
+                string replaceText = ReplaceTextBox_Replace.Text;
                 if (string.IsNullOrEmpty(searchText)) return;
 
-                StringComparison comp = MatchCaseCheckBox.IsChecked == true 
+                StringComparison comp = MatchCaseCheckBox_Replace.IsChecked == true 
                     ? StringComparison.Ordinal 
                     : StringComparison.OrdinalIgnoreCase;
 
@@ -134,14 +175,14 @@ namespace Nelir.Views
 
         private void ReplaceAllButton_Click(object sender, RoutedEventArgs e)
         {
-            string searchText = FindTextBox.Text;
-            string replaceText = ReplaceTextBox.Text;
+            string searchText = FindTextBox_Replace.Text;
+            string replaceText = ReplaceTextBox_Replace.Text;
             if (string.IsNullOrEmpty(searchText)) return;
 
             var items = _dataGrid.Items.OfType<TranslationRow>().ToList();
             int count = 0;
 
-            StringComparison comp = MatchCaseCheckBox.IsChecked == true 
+            StringComparison comp = MatchCaseCheckBox_Replace.IsChecked == true 
                 ? StringComparison.Ordinal 
                 : StringComparison.OrdinalIgnoreCase;
 
@@ -164,8 +205,7 @@ namespace Nelir.Views
                 }
             }
 
-            MessageBox.Show($"Successfully replaced {count} rows in the view.", "Replace All", MessageBoxButton.OK, MessageBoxImage.Information);
+            MessageBox.Show($"Đã thay thế thành công {count} dòng trong chế độ xem.", "Thay thế tất cả", MessageBoxButton.OK, MessageBoxImage.Information);
         }
     }
 }
-

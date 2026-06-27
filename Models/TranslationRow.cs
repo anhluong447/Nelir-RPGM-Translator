@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace Nelir.Models
 {
@@ -8,6 +8,13 @@ namespace Nelir.Models
         Dialog,          // Show Message (RPGM code 101/401)
         Choice,          // Show Choices (RPGM code 102)
         Comment          // Show Comment (RPGM code 108/408)
+    }
+
+    public enum TranslationStatus
+    {
+        Empty,
+        MtlCopied,
+        Translated
     }
 
     public partial class TranslationRow : ObservableObject
@@ -33,6 +40,9 @@ namespace Nelir.Models
         [ObservableProperty]
         private bool _isDirty;
 
+        // Static tracking for Undo/Redo
+        public static Nelir.Services.UndoRedoService? UndoService { get; set; }
+
         // Custom display helper for DataGrid Column binding
         public string DisplayRawText
         {
@@ -48,9 +58,30 @@ namespace Nelir.Models
 
         public string UniqueKey => $"{SourceFile}::{EventId}::{PageIndex}::{CommandIndex}::{SubIndex}";
 
+        public TranslationStatus Status
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(TranslationText)) return TranslationStatus.Empty;
+                if (TranslationText == MtlText) return TranslationStatus.MtlCopied;
+                return TranslationStatus.Translated;
+            }
+        }
+
+        partial void OnTranslationTextChanging(string value)
+        {
+            UndoService?.Push(UniqueKey, TranslationText, value);
+        }
+
         partial void OnTranslationTextChanged(string value)
         {
             IsDirty = true;
+            OnPropertyChanged(nameof(Status));
+        }
+
+        partial void OnMtlTextChanged(string value)
+        {
+            OnPropertyChanged(nameof(Status));
         }
     }
 }

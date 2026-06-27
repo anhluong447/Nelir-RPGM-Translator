@@ -21,7 +21,7 @@ graph TD
 ## 🗂️ Core Components
 
 ### 1. Models (Data Layers)
-*   [TranslationRow](file:///d:/Shits/Prj/Nelir-RPGM-Translator/Nelir/Models/TranslationRow.cs): Represents a single line of dialogue or choice text extracted from the game files. Contains metadata (`EventId`, `PageIndex`, `CommandIndex`), original speaker, raw text, MTL text, official translation, and dirty flags.
+*   [TranslationRow](file:///d:/Shits/Prj/Nelir-RPGM-Translator/Nelir/Models/TranslationRow.cs): Represents a single line of dialogue or choice text extracted from the game files. Contains metadata (`EventId`, `PageIndex`, `CommandIndex`), original speaker, raw text, MTL text, official translation, dirty flags, a dynamic `TranslationStatus` enum property (`Empty`, `MtlCopied`, `Translated`), and a hook into the static `UndoService`.
 *   [FileNode](file:///d:/Shits/Prj/Nelir-RPGM-Translator/Nelir/Models/FileNode.cs): Represents an item in the sidebar TreeView (either the root folder or individual JSON files). Tracks translation statistics (e.g. `TotalRows`, `TranslatedRows`).
 *   [ProjectState](file:///d:/Shits/Prj/Nelir-RPGM-Translator/Nelir/Models/ProjectState.cs): Acts as the in-memory database of the application, holding all loaded `TranslationRow`s and mapping keys.
 *   [ExportFileItem](file:///d:/Shits/Prj/Nelir-RPGM-Translator/Nelir/Models/ExportFileItem.cs): Represents a file entry in the selective export window.
@@ -29,22 +29,29 @@ graph TD
 
 ### 2. ViewModels (Logic & State Controllers)
 *   [MainViewModel](file:///d:/Shits/Prj/Nelir-RPGM-Translator/Nelir/ViewModels/MainViewModel.cs):
-    - Manages the application states (`IsProjectLoaded`, `IsBusy`, `BusyStatus`, `BusyDetail`, `BusyProgress`, `BusyPerformanceText`, `FileTree`, `SelectedFile`, `SearchQuery`, `Glossary`).
-    - Commands: `SelectFolderCommand` (Load RAW), `ImportMtlCommand` (Load MTL), `ExportFlatCommand` (Launch Selective Export), `OpenGlossaryCommand` (Manage Glossary).
+    - Manages the application states (`IsProjectLoaded`, `IsBusy`, `BusyStatus`, `BusyDetail`, `BusyProgress`, `BusyPerformanceText`, `FileTree`, `SelectedFile`, `SearchQuery`, `Glossary`, `IsDarkMode`).
+    - Commands: `SelectFolderCommand` (Load RAW), `ImportMtlCommand` (Load MTL), `ExportFlatCommand` (Launch Selective Export), `OpenGlossaryCommand` (Manage Glossary), `UndoCommand` (Ctrl+Z manual translation rollback), `RedoCommand` (Ctrl+Y rollback forward).
     - Exposes `RowsView` (WPF `ICollectionView`) configured with a filter predicate (`FilterRows`), grouping descriptions (`SourceFile`), and sort descriptions (`SourceFile` ascending, `RowIndex` ascending).
 
 ### 3. Views (UI Layers)
-*   [MainWindow](file:///d:/Shits/Prj/Nelir-RPGM-Translator/Nelir/Views/MainWindow.xaml): Host grid, sidebar TreeView, toolbar buttons, main DataGrid, and the premium overlay progress card blocking interaction during long-running tasks. Replaces raw TextBlock in RAW column with custom `GlossaryTextBlock`.
+*   [MainWindow](file:///d:/Shits/Prj/Nelir-RPGM-Translator/Nelir/Views/MainWindow.xaml): Host grid, sidebar TreeView, toolbar buttons (including runtime **Theme Toggle Button**), main DataGrid (containing the **TT Status Column**), and the premium overlay progress card blocking interaction during long-running tasks. Replaces raw TextBlock in RAW column with custom `GlossaryTextBlock`.
 *   [FindReplaceDialog](file:///d:/Shits/Prj/Nelir-RPGM-Translator/Nelir/Views/FindReplaceDialog.xaml): Floating dialog for search and replace actions.
 *   [ExportSelectionWindow](file:///d:/Shits/Prj/Nelir-RPGM-Translator/Nelir/Views/ExportSelectionWindow.xaml): Directory selection and file checklist popup.
 *   [GlossaryWindow](file:///d:/Shits/Prj/Nelir-RPGM-Translator/Nelir/Views/GlossaryWindow.xaml): Modal dialog displaying list of terms in an editable DataGrid.
 *   [GlossaryTextBlock](file:///d:/Shits/Prj/Nelir-RPGM-Translator/Nelir/Views/GlossaryTextBlock.cs): Custom WPF TextBlock that matches glossary keys using regex and highlights them with custom tooltips.
 
-### 4. Services (Business Logic)
+### 4. Converters
+*   [TranslationStatusConverter](file:///d:/Shits/Prj/Nelir-RPGM-Translator/Nelir/Converters/TranslationStatusConverter.cs): Maps `TranslationStatus` enum values to visual symbols (`✓`, `~`, `○`).
+*   [TranslationStatusBrushConverter](file:///d:/Shits/Prj/Nelir-RPGM-Translator/Nelir/Converters/TranslationStatusBrushConverter.cs): Resolves theme-aware solid brushes (`Success`, `Warning`, `TextTertiary`) for status display colors.
+*   [BoolToThemeIconConverter](file:///d:/Shits/Prj/Nelir-RPGM-Translator/Nelir/Converters/BoolToThemeIconConverter.cs): Converts the `IsDarkMode` boolean state into light/dark representation symbols (`☀️`/`🌙`).
+
+### 5. Services (Business Logic)
 *   [RpgmParser](file:///d:/Shits/Prj/Nelir-RPGM-Translator/Nelir/Services/RpgmParser.cs): Decodes RPG Maker MZ/MV JSON files. Extracts dialogue codes (e.g., `401`), choices (`102/402`), and developer comments (`108/408`), resolving name tags via standard regexes (`\\nc<Speaker>Text`).
 *   [ExportService](file:///d:/Shits/Prj/Nelir-RPGM-Translator/Nelir/Services/ExportService.cs): Handles exporting selected files to flat translation dictionaries (`UniqueKey` -> `TranslationText`).
 *   [AutoSaveService](file:///d:/Shits/Prj/Nelir-RPGM-Translator/Nelir/Services/AutoSaveService.cs): Periodically writes dirty rows to a local hidden backup file (`.nelir_autosave.json`) inside the RAW folder. Restores back manual translations directly to the `TranslationText` (TRANSLATED) column.
 *   [GlossaryService](file:///d:/Shits/Prj/Nelir-RPGM-Translator/Nelir/Services/GlossaryService.cs): JSON deserializer and manager for `glossary.json` in the raw folder. Exposes lookup dictionary for cell binding.
+*   [UndoRedoService](file:///d:/Shits/Prj/Nelir-RPGM-Translator/Nelir/Services/UndoRedoService.cs): Standard double-stack bounded undo history tracking up to 200 items deep.
+*   [ThemeService](file:///d:/Shits/Prj/Nelir-RPGM-Translator/Nelir/Services/ThemeService.cs): Swaps light and dark resource dictionaries dynamically at runtime.
 
 ---
 

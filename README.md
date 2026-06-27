@@ -10,11 +10,18 @@ A desktop tool built in **WPF (.NET 10.0)** to translate RPG Maker MZ/MV game da
   - **RAW Folder (Read)**: Ingests original game JSON files, automatically extracting translatable rows (dialogue text, choices, name tags) while ignoring meaningless scripts or system commands.
   - **MTL Folder (Read)**: Imports reference machine translations, supporting both structured game files and simple key-value flat JSON structures.
   - **Selective Export (Write)**: Exports translated strings to flat JSON files (mapping `UniqueKey` to `TranslationText`) for selected files.
-* **Modern WPF UI**:
+* **Modern WPF UI & Dark Mode**:
   - Minimalist **Light Mode** theme featuring soft warm-sand accents, clear typography, and responsive hover transitions.
+  - Fully integrated **Dark Mode** (Catppuccin-like blue-gray theme) dynamically toggleable from the top toolbar button, instantly swapping colors/brushes and saving preference to local settings.
+  - Dynamic overlay: Semi-transparent loading screen overlay (`BgOverlay`) dynamically matches active theme colors.
   - Grid separation using **Grouped File Headers** with line statistics.
   - Flexible layout columns (STT, RAW text, MTL, and Edited translation) supporting drag-and-drop column resizing.
   - Premium **Loading Overlay**: Displays when loading folders or importing MTL translations, reporting active file details (name and size), elapsed time, row throughput speed, and progress percentages to debug bottlenecks.
+* **Translation Status Badge (`TT` Column)**:
+  - High-visibility status indicator next to translations: Empty (`○` in Gray), MTL-copied (`~` in Yellow/Warning), or manually Translated (`✓` in Green/Success).
+* **Keyboard-Driven Undo / Redo (Ctrl + Z / Ctrl + Y)**:
+  - Custom bounded double-stack tracking up to 200 operations deep on cell manual translation inputs.
+  - Automatically suspends tracking during bulk folder loads or machine translation imports to optimize performance.
 * **Sidebar Progress Tracking**:
   - Displays completion progress ratios next to each file and the root folder in the tree view (e.g. `Map001.json (0/4)`).
 * **Find & Replace (Ctrl + F / Ctrl + H)**:
@@ -47,9 +54,10 @@ Nelir-RPGM-Translator/
 │   ├── Models/                 # Data schemas (TranslationRow, FileNode, ProjectState, GlossaryEntry)
 │   ├── ViewModels/             # MainViewModel (UI state, commands, filtering)
 │   ├── Views/                  # MainWindow, FindReplaceDialog, ExportSelectionWindow, GlossaryWindow, GlossaryTextBlock
-│   ├── Services/               # RpgmParser, ExportService, AutoSaveService, AppSettingsService, GlossaryService
-│   ├── Resources/              # Color tokens, styles, geometries, and control templates
-│   ├── Converters/             # WPF Bindings Value Converters
+│   ├── Services/               # RpgmParser, ExportService, AutoSaveService, AppSettingsService, GlossaryService, UndoRedoService, ThemeService
+│   ├── Resources/              # Typography, geometries, control styles, and theme dictionaries
+│   │   └── Themes/             # Light.xaml and Dark.xaml theme dictionaries
+│   ├── Converters/             # WPF Bindings Value Converters (TranslationStatusConverter, TranslationStatusBrushConverter, BoolToThemeIconConverter, etc.)
 │   └── Nelir.csproj            # WPF Project Configuration
 ├── test_data/                  # Sample RPG Maker JSON files (Map001, CommonEvents, glossary.json)
 └── README.md                   # Project overview

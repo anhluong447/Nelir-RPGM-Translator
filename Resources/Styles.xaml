@@ -19,8 +19,8 @@
 
     <!-- PRIMARY ACCENT BUTTON -->
     <Style x:Key="ButtonPrimary" TargetType="Button" BasedOn="{StaticResource ButtonBase}">
-        <Setter Property="Background" Value="{StaticResource Accent}"/>
-        <Setter Property="Foreground" Value="{StaticResource TextOnAccent}"/>
+        <Setter Property="Background" Value="{DynamicResource Accent}"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextOnAccent}"/>
         <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="Template">
             <Setter.Value>
@@ -34,14 +34,14 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="Root" Property="Background" Value="{StaticResource AccentHover}"/>
+                            <Setter TargetName="Root" Property="Background" Value="{DynamicResource AccentHover}"/>
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
                             <Setter TargetName="Root" Property="Opacity" Value="0.85"/>
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
-                            <Setter TargetName="Root" Property="Background" Value="{StaticResource TextDisabled}"/>
-                            <Setter Property="Foreground" Value="{StaticResource TextSecondary}"/>
+                            <Setter TargetName="Root" Property="Background" Value="{DynamicResource TextDisabled}"/>
+                            <Setter Property="Foreground" Value="{DynamicResource TextSecondary}"/>
                             <Setter Property="Cursor" Value="Arrow"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
@@ -53,8 +53,8 @@
     <!-- SECONDARY / GHOST BORDER BUTTON -->
     <Style x:Key="ButtonSecondary" TargetType="Button" BasedOn="{StaticResource ButtonBase}">
         <Setter Property="Background" Value="Transparent"/>
-        <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
-        <Setter Property="BorderBrush" Value="{StaticResource BorderDefault}"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderDefault}"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="Template">
             <Setter.Value>
@@ -70,11 +70,11 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="Root" Property="Background" Value="{StaticResource BgSunken}"/>
-                            <Setter TargetName="Root" Property="BorderBrush" Value="{StaticResource BorderStrong}"/>
+                            <Setter TargetName="Root" Property="Background" Value="{DynamicResource BgSunken}"/>
+                            <Setter TargetName="Root" Property="BorderBrush" Value="{DynamicResource BorderStrong}"/>
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
-                            <Setter TargetName="Root" Property="Background" Value="{StaticResource BorderDefault}"/>
+                            <Setter TargetName="Root" Property="Background" Value="{DynamicResource BorderDefault}"/>
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter Property="Opacity" Value="0.4"/>
@@ -88,8 +88,8 @@
 
     <!-- DANGER / ERROR ACTION BUTTON -->
     <Style x:Key="ButtonDanger" TargetType="Button" BasedOn="{StaticResource ButtonPrimary}">
-        <Setter Property="Background" Value="{StaticResource Danger}"/>
-        <Setter Property="Foreground" Value="{StaticResource TextOnAccent}"/>
+        <Setter Property="Background" Value="{DynamicResource Danger}"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextOnAccent}"/>
         <Style.Triggers>
             <Trigger Property="IsMouseOver" Value="True">
                 <Setter Property="Background" Value="#b91c1c"/>
@@ -100,7 +100,7 @@
     <!-- GHOST TEXT BUTTON -->
     <Style x:Key="ButtonGhost" TargetType="Button" BasedOn="{StaticResource ButtonBase}">
         <Setter Property="Background" Value="Transparent"/>
-        <Setter Property="Foreground" Value="{StaticResource TextSecondary}"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextSecondary}"/>
         <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="Template">
             <Setter.Value>
@@ -114,11 +114,11 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="Root" Property="Background" Value="{StaticResource BgSunken}"/>
-                            <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+                            <Setter TargetName="Root" Property="Background" Value="{DynamicResource BgSunken}"/>
+                            <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
-                            <Setter TargetName="Root" Property="Background" Value="{StaticResource BorderDefault}"/>
+                            <Setter TargetName="Root" Property="Background" Value="{DynamicResource BorderDefault}"/>
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter Property="Opacity" Value="0.3"/>
@@ -135,15 +135,15 @@
     <!-- ======================================================================= -->
 
     <Style x:Key="InputDefault" TargetType="TextBox">
-        <Setter Property="Background" Value="{StaticResource BgSunken}"/>
-        <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
-        <Setter Property="BorderBrush" Value="{StaticResource BorderDefault}"/>
+        <Setter Property="Background" Value="{DynamicResource BgSunken}"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderDefault}"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="Padding" Value="{StaticResource PaddingInput}"/>
         <Setter Property="FontSize" Value="{StaticResource FontSizeBase}"/>
         <Setter Property="FontFamily" Value="{StaticResource FontMain}"/>
-        <Setter Property="CaretBrush" Value="{StaticResource Accent}"/>
-        <Setter Property="SelectionBrush" Value="{StaticResource AccentMuted}"/>
+        <Setter Property="CaretBrush" Value="{DynamicResource Accent}"/>
+        <Setter Property="SelectionBrush" Value="{DynamicResource AccentMuted}"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="TextBox">
@@ -158,11 +158,11 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="Root" Property="BorderBrush" Value="{StaticResource BorderStrong}"/>
+                            <Setter TargetName="Root" Property="BorderBrush" Value="{DynamicResource BorderStrong}"/>
                         </Trigger>
                         <Trigger Property="IsFocused" Value="True">
-                            <Setter TargetName="Root" Property="BorderBrush" Value="{StaticResource BorderFocus}"/>
-                            <Setter TargetName="Root" Property="Background" Value="{StaticResource BgSurface}"/>
+                            <Setter TargetName="Root" Property="BorderBrush" Value="{DynamicResource BorderFocus}"/>
+                            <Setter TargetName="Root" Property="Background" Value="{DynamicResource BgSurface}"/>
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter Property="Opacity" Value="0.5"/>
@@ -191,11 +191,11 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="Root" Property="BorderBrush" Value="{StaticResource BorderStrong}"/>
+                            <Setter TargetName="Root" Property="BorderBrush" Value="{DynamicResource BorderStrong}"/>
                         </Trigger>
                         <Trigger Property="IsFocused" Value="True">
-                            <Setter TargetName="Root" Property="BorderBrush" Value="{StaticResource BorderFocus}"/>
-                            <Setter TargetName="Root" Property="Background" Value="{StaticResource BgSurface}"/>
+                            <Setter TargetName="Root" Property="BorderBrush" Value="{DynamicResource BorderFocus}"/>
+                            <Setter TargetName="Root" Property="Background" Value="{DynamicResource BgSurface}"/>
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter Property="Opacity" Value="0.5"/>
@@ -211,15 +211,15 @@
     <!-- ======================================================================= -->
 
     <Style TargetType="DataGrid">
-        <Setter Property="Background" Value="{StaticResource BgSurface}"/>
-        <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
-        <Setter Property="BorderBrush" Value="{StaticResource BorderDefault}"/>
+        <Setter Property="Background" Value="{DynamicResource BgSurface}"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderDefault}"/>
         <Setter Property="BorderThickness" Value="1"/>
-        <Setter Property="RowBackground" Value="{StaticResource BgSurface}"/>
-        <Setter Property="AlternatingRowBackground" Value="{StaticResource BgSunken}"/>
+        <Setter Property="RowBackground" Value="{DynamicResource BgSurface}"/>
+        <Setter Property="AlternatingRowBackground" Value="{DynamicResource BgSunken}"/>
         <Setter Property="GridLinesVisibility" Value="All"/>
-        <Setter Property="HorizontalGridLinesBrush" Value="{StaticResource BorderSubtle}"/>
-        <Setter Property="VerticalGridLinesBrush" Value="{StaticResource BorderSubtle}"/>
+        <Setter Property="HorizontalGridLinesBrush" Value="{DynamicResource BorderSubtle}"/>
+        <Setter Property="VerticalGridLinesBrush" Value="{DynamicResource BorderSubtle}"/>
         <!-- Virtualization (CRITICAL for Performance) -->
         <Setter Property="EnableRowVirtualization" Value="True"/>
         <Setter Property="EnableColumnVirtualization" Value="True"/>
@@ -237,20 +237,20 @@
         <Setter Property="SelectionUnit" Value="FullRow"/>
         <Style.Resources>
             <!-- Override default WPF selection colors with our custom theme colors -->
-            <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="{StaticResource AccentMutedColor}"/>
-            <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}" Color="{StaticResource TextPrimaryColor}"/>
-            <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightBrushKey}" Color="{StaticResource AccentMutedColor}"/>
-            <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightTextBrushKey}" Color="{StaticResource TextPrimaryColor}"/>
+            <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="{DynamicResource AccentMutedColor}"/>
+            <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}" Color="{DynamicResource TextPrimaryColor}"/>
+            <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightBrushKey}" Color="{DynamicResource AccentMutedColor}"/>
+            <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightTextBrushKey}" Color="{DynamicResource TextPrimaryColor}"/>
         </Style.Resources>
     </Style>
 
     <!-- DataGridColumnHeader -->
     <Style TargetType="DataGridColumnHeader">
-        <Setter Property="Background" Value="{StaticResource BgSunken}"/>
-        <Setter Property="Foreground" Value="{StaticResource TextSecondary}"/>
+        <Setter Property="Background" Value="{DynamicResource BgSunken}"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextSecondary}"/>
         <Setter Property="FontWeight" Value="SemiBold"/>
         <Setter Property="Padding" Value="12,10"/>
-        <Setter Property="BorderBrush" Value="{StaticResource BorderDefault}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderDefault}"/>
         <Setter Property="BorderThickness" Value="0,0,1,1"/>
         <Setter Property="HorizontalContentAlignment" Value="Left"/>
         <Setter Property="VerticalContentAlignment" Value="Center"/>
@@ -274,11 +274,11 @@
         <Setter Property="BorderThickness" Value="0"/>
         <Style.Triggers>
             <Trigger Property="IsSelected" Value="True">
-                <Setter Property="Background" Value="{StaticResource AccentMuted}"/>
-                <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+                <Setter Property="Background" Value="{DynamicResource AccentMuted}"/>
+                <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
             </Trigger>
             <Trigger Property="IsMouseOver" Value="True">
-                <Setter Property="Background" Value="{StaticResource BorderSubtle}"/>
+                <Setter Property="Background" Value="{DynamicResource BorderSubtle}"/>
             </Trigger>
         </Style.Triggers>
     </Style>
@@ -286,7 +286,7 @@
     <!-- DataGridCell -->
     <Style TargetType="DataGridCell">
         <Setter Property="Background" Value="Transparent"/>
-        <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
         <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="Padding" Value="8"/>
         <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
@@ -305,8 +305,8 @@
         </Setter>
         <Style.Triggers>
             <Trigger Property="IsSelected" Value="True">
-                <Setter Property="Background" Value="{StaticResource AccentMuted}"/>
-                <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+                <Setter Property="Background" Value="{DynamicResource AccentMuted}"/>
+                <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
             </Trigger>
         </Style.Triggers>
     </Style>
@@ -316,17 +316,17 @@
     <!-- ======================================================================= -->
 
     <Style TargetType="TreeView">
-        <Setter Property="Background" Value="{StaticResource BgSunken}"/>
+        <Setter Property="Background" Value="{DynamicResource BgSunken}"/>
         <Setter Property="BorderBrush" Value="Transparent"/>
         <Setter Property="BorderThickness" Value="0"/>
-        <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
         <Setter Property="Padding" Value="4"/>
     </Style>
 
     <Style TargetType="TreeViewItem">
         <Setter Property="Background" Value="Transparent"/>
         <Setter Property="Padding" Value="6,4"/>
-        <Setter Property="Foreground" Value="{StaticResource TextSecondary}"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextSecondary}"/>
         <Setter Property="FontFamily" Value="{StaticResource FontMain}"/>
         <Setter Property="FontSize" Value="{StaticResource FontSizeBase}"/>
         <Setter Property="Cursor" Value="Hand"/>
@@ -356,7 +356,7 @@
                                 <ToggleButton x:Name="Expander" 
                                               ClickMode="Press"
                                               IsChecked="{Binding IsExpanded, RelativeSource={RelativeSource TemplatedParent}}"
-                                              Foreground="{StaticResource TextTertiary}">
+                                              Foreground="{DynamicResource TextTertiary}">
                                     <ToggleButton.Style>
                                         <Style TargetType="ToggleButton">
                                             <Setter Property="Focusable" Value="False"/>
@@ -414,11 +414,11 @@
                             <Setter TargetName="ItemsHost" Property="Visibility" Value="Visible"/>
                         </Trigger>
                         <Trigger Property="IsSelected" Value="True">
-                            <Setter TargetName="Bd" Property="Background" Value="{StaticResource AccentMuted}"/>
-                            <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource AccentMuted}"/>
+                            <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
                         </Trigger>
                         <Trigger Property="IsMouseOver" Value="True" SourceName="Bd">
-                            <Setter TargetName="Bd" Property="Background" Value="{StaticResource BorderSubtle}"/>
+                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource BorderSubtle}"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>

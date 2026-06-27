@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Text.Json;
 
@@ -13,6 +13,7 @@ namespace Nelir.Services
         public double WindowWidth { get; set; } = 1400;
         public double WindowHeight { get; set; } = 800;
         public bool WindowMaximized { get; set; } = false;
+        public bool IsDarkMode { get; set; } = false;
     }
 
     public class AppSettingsService

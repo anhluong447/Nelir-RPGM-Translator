@@ -24,11 +24,16 @@ namespace Nelir.ViewModels
         private readonly MtlImporter _mtlImporter;
         private readonly ExportService _exportService;
         private readonly AppSettingsService _settingsService;
+        private readonly UndoRedoService _undoRedoService;
+        private readonly ThemeService _themeService;
         private AutoSaveService? _autoSaveService;
         private readonly System.Windows.Threading.DispatcherTimer _searchDebounceTimer;
 
         [ObservableProperty]
         private ProjectState _project;
+
+        [ObservableProperty]
+        private bool _isDarkMode;
 
         [ObservableProperty]
         private GlossaryService _glossary;
@@ -69,10 +74,19 @@ namespace Nelir.ViewModels
             _mtlImporter = new MtlImporter();
             _exportService = new ExportService();
             _settingsService = new AppSettingsService();
+            _undoRedoService = new UndoRedoService();
+            _themeService = new ThemeService();
             
             _project = new ProjectState();
             _glossary = new GlossaryService();
             _fileTree = new ObservableCollection<FileNode>();
+
+            // Hook up static reference
+            TranslationRow.UndoService = _undoRedoService;
+
+            var settings = _settingsService.CurrentSettings;
+            _isDarkMode = settings.IsDarkMode;
+            _themeService.ApplyTheme(_isDarkMode);
 
             // Setup collection view for filtering and sorting
             RowsView = CollectionViewSource.GetDefaultView(_project.AllRows);
@@ -88,7 +102,6 @@ namespace Nelir.ViewModels
             _searchDebounceTimer.Tick += SearchDebounceTimer_Tick;
 
             // Load last settings if available
-            var settings = _settingsService.CurrentSettings;
             if (!string.IsNullOrEmpty(settings.LastDataFolder) && Directory.Exists(settings.LastDataFolder))
             {
                 _ = LoadFolderAsync(settings.LastDataFolder);
@@ -199,6 +212,7 @@ namespace Nelir.ViewModels
 
         private async Task LoadFolderAsync(string folderPath)
         {
+            TranslationRow.UndoService = null;
             IsBusy = true;
             BusyStatus = "Đang đọc các tệp tin game (RAW)...";
             BusyDetail = "Đang chuẩn bị danh sách tệp...";
@@ -209,6 +223,9 @@ namespace Nelir.ViewModels
 
             // Stop existing autosave if active
             _autoSaveService?.Stop();
+
+            // Clear undo history
+            _undoRedoService.Clear();
 
             try
             {
@@ -356,6 +373,7 @@ namespace Nelir.ViewModels
             }
             finally
             {
+                TranslationRow.UndoService = _undoRedoService;
                 IsBusy = false;
             }
         }
@@ -453,6 +471,7 @@ namespace Nelir.ViewModels
         {
             if (!IsProjectLoaded) return;
 
+            TranslationRow.UndoService = null;
             try
             {
                 var dialog = new OpenFolderDialog
@@ -517,6 +536,7 @@ namespace Nelir.ViewModels
             }
             finally
             {
+                TranslationRow.UndoService = _undoRedoService;
                 IsBusy = false;
             }
         }
@@ -594,6 +614,45 @@ namespace Nelir.ViewModels
             _autoSaveService?.TriggerAutoSave();
             _autoSaveService?.Stop();
             _settingsService.SaveSettings();
+        }
+
+        partial void OnIsDarkModeChanged(bool value)
+        {
+            _themeService.ApplyTheme(value);
+            _settingsService.CurrentSettings.IsDarkMode = value;
+            _settingsService.SaveSettings();
+        }
+
+        [RelayCommand]
+        private void ToggleTheme()
+        {
+            IsDarkMode = !IsDarkMode;
+        }
+
+        [RelayCommand]
+        private void Undo()
+        {
+            var entry = _undoRedoService.Undo();
+            if (entry == null) return;
+            if (Project.RowIndex.TryGetValue(entry.UniqueKey, out var row))
+            {
+                TranslationRow.UndoService = null;
+                row.TranslationText = entry.OldValue;
+                TranslationRow.UndoService = _undoRedoService;
+            }
+        }
+
+        [RelayCommand]
+        private void Redo()
+        {
+            var entry = _undoRedoService.Redo();
+            if (entry == null) return;
+            if (Project.RowIndex.TryGetValue(entry.UniqueKey, out var row))
+            {
+                TranslationRow.UndoService = null;
+                row.TranslationText = entry.NewValue;
+                TranslationRow.UndoService = _undoRedoService;
+            }
         }
     }
 }

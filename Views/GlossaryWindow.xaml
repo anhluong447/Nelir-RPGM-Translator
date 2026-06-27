@@ -6,8 +6,8 @@
         mc:Ignorable="d"
         Title="Quản Lý Thuật Ngữ (Glossary)" Height="480" Width="600"
         WindowStartupLocation="CenterOwner"
-        Background="{StaticResource BgSurface}"
-        Foreground="{StaticResource TextPrimary}">
+        Background="{DynamicResource BgSurface}"
+        Foreground="{DynamicResource TextPrimary}">
     <Grid Margin="20">
         <Grid.RowDefinitions>
             <!-- 0. Header Description -->
@@ -23,11 +23,11 @@
                    Style="{StaticResource TextCaption}" TextWrapping="Wrap" Margin="0,0,0,15"/>
 
         <!-- 1. DataGrid of Terms -->
-        <Border Grid.Row="1" Background="{StaticResource BgSunken}" BorderBrush="{StaticResource BorderDefault}" 
+        <Border Grid.Row="1" Background="{DynamicResource BgSunken}" BorderBrush="{DynamicResource BorderDefault}" 
                 BorderThickness="1" CornerRadius="{StaticResource RadiusMd}" Padding="4" Margin="0,0,0,20">
             <DataGrid x:Name="GlossaryGrid" AutoGenerateColumns="False" CanUserAddRows="True" CanUserDeleteRows="True"
                       Background="Transparent" BorderThickness="0" RowHeaderWidth="0" GridLinesVisibility="Horizontal"
-                      HorizontalGridLinesBrush="{StaticResource BorderDefault}" RowHeight="32" Padding="4">
+                      HorizontalGridLinesBrush="{DynamicResource BorderDefault}" RowHeight="32" Padding="4">
                 <DataGrid.Columns>
                     <!-- Original Term Column -->
                     <DataGridTextColumn Header="Từ Gốc (RAW)" Width="1*" Binding="{Binding OriginalTerm, UpdateSourceTrigger=PropertyChanged}">

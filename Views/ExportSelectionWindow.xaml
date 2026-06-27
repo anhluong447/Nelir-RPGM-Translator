@@ -7,8 +7,8 @@
         Title="Xuất Dữ Liệu Bản Dịch JSON" Height="480" Width="520"
         WindowStartupLocation="CenterOwner"
         ResizeMode="NoResize"
-        Background="{StaticResource BgSurface}"
-        Foreground="{StaticResource TextPrimary}">
+        Background="{DynamicResource BgSurface}"
+        Foreground="{DynamicResource TextPrimary}">
     <Grid Margin="20">
         <Grid.RowDefinitions>
             <!-- 0. Header Description -->
@@ -28,7 +28,7 @@
                    Style="{StaticResource TextCaption}" TextWrapping="Wrap" Margin="0,0,0,15"/>
 
         <!-- 1. Destination Folder Selector -->
-        <Border Grid.Row="1" Background="{StaticResource BgSunken}" BorderBrush="{StaticResource BorderDefault}" 
+        <Border Grid.Row="1" Background="{DynamicResource BgSunken}" BorderBrush="{DynamicResource BorderDefault}" 
                 BorderThickness="1" CornerRadius="{StaticResource RadiusMd}" Padding="12" Margin="0,0,0,15">
             <Grid>
                 <Grid.RowDefinitions>
@@ -50,11 +50,11 @@
 
         <!-- 2. Select All Checkbox -->
         <CheckBox x:Name="SelectAllCheckBox" Grid.Row="2" Content="Chọn tất cả các tệp" 
-                  FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" 
+                  FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" 
                   Margin="4,0,0,10" Checked="SelectAllCheckBox_Checked" Unchecked="SelectAllCheckBox_Unchecked"/>
 
         <!-- 3. List of Files -->
-        <Border Grid.Row="3" Background="{StaticResource BgSunken}" BorderBrush="{StaticResource BorderDefault}" 
+        <Border Grid.Row="3" Background="{DynamicResource BgSunken}" BorderBrush="{DynamicResource BorderDefault}" 
                 BorderThickness="1" CornerRadius="{StaticResource RadiusMd}" Padding="8" Margin="0,0,0,20">
             <ListBox x:Name="FilesListBox" BorderThickness="0" Background="Transparent" 
                      ScrollViewer.HorizontalScrollBarVisibility="Disabled">

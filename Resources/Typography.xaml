@@ -19,19 +19,19 @@
     <Style x:Key="TextBody" TargetType="TextBlock">
         <Setter Property="FontFamily" Value="{StaticResource FontMain}"/>
         <Setter Property="FontSize" Value="{StaticResource FontSizeBase}"/>
-        <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
         <Setter Property="TextWrapping" Value="Wrap"/>
         <Setter Property="VerticalAlignment" Value="Center"/>
     </Style>
 
     <Style x:Key="TextBodySecondary" TargetType="TextBlock" BasedOn="{StaticResource TextBody}">
-        <Setter Property="Foreground" Value="{StaticResource TextSecondary}"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextSecondary}"/>
     </Style>
 
     <Style x:Key="TextMono" TargetType="TextBlock">
         <Setter Property="FontFamily" Value="{StaticResource FontMono}"/>
         <Setter Property="FontSize" Value="{StaticResource FontSizeBase}"/>
-        <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
         <Setter Property="VerticalAlignment" Value="Center"/>
     </Style>
 
@@ -39,7 +39,7 @@
         <Setter Property="FontFamily" Value="{StaticResource FontMain}"/>
         <Setter Property="FontSize" Value="{StaticResource FontSizeSm}"/>
         <Setter Property="FontWeight" Value="SemiBold"/>
-        <Setter Property="Foreground" Value="{StaticResource TextSecondary}"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextSecondary}"/>
         <Setter Property="VerticalAlignment" Value="Center"/>
     </Style>
 
@@ -47,7 +47,7 @@
         <Setter Property="FontFamily" Value="{StaticResource FontMain}"/>
         <Setter Property="FontSize" Value="{StaticResource FontSizeMd}"/>
         <Setter Property="FontWeight" Value="SemiBold"/>
-        <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
         <Setter Property="VerticalAlignment" Value="Center"/>
     </Style>
 
@@ -55,14 +55,14 @@
         <Setter Property="FontFamily" Value="{StaticResource FontMain}"/>
         <Setter Property="FontSize" Value="{StaticResource FontSizeXl}"/>
         <Setter Property="FontWeight" Value="Bold"/>
-        <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
         <Setter Property="VerticalAlignment" Value="Center"/>
     </Style>
 
     <Style x:Key="TextCaption" TargetType="TextBlock">
         <Setter Property="FontFamily" Value="{StaticResource FontMain}"/>
         <Setter Property="FontSize" Value="{StaticResource FontSizeXs}"/>
-        <Setter Property="Foreground" Value="{StaticResource TextTertiary}"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextTertiary}"/>
         <Setter Property="VerticalAlignment" Value="Center"/>
     </Style>
 

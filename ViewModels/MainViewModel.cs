@@ -129,17 +129,24 @@ namespace Nelir.ViewModels
         [RelayCommand]
         private async Task SelectFolder()
         {
-            var dialog = new OpenFolderDialog
+            try
             {
-                Title = "Select RPGMaker Game 'data' Folder",
-                InitialDirectory = Directory.Exists(_settingsService.CurrentSettings.LastDataFolder) 
-                    ? _settingsService.CurrentSettings.LastDataFolder 
-                    : string.Empty
-            };
+                var dialog = new OpenFolderDialog
+                {
+                    Title = "Select RPGMaker Game 'data' Folder",
+                    InitialDirectory = Directory.Exists(_settingsService.CurrentSettings.LastDataFolder) 
+                        ? _settingsService.CurrentSettings.LastDataFolder 
+                        : string.Empty
+                };
 
-            if (dialog.ShowDialog() == true)
+                if (dialog.ShowDialog(Application.Current.MainWindow) == true)
+                {
+                    await LoadFolderAsync(dialog.FolderName);
+                }
+            }
+            catch (Exception ex)
             {
-                await LoadFolderAsync(dialog.FolderName);
+                MessageBox.Show($"Lỗi khi chọn thư mục RAW: {ex.Message}\n\nStack Trace:\n{ex.StackTrace}", "Lỗi Hệ Thống", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -311,19 +318,26 @@ namespace Nelir.ViewModels
         {
             if (!IsProjectLoaded) return;
 
-            var dialog = new OpenFolderDialog
+            try
             {
-                Title = "Select MTL Translation Folder"
-            };
+                var dialog = new OpenFolderDialog
+                {
+                    Title = "Select MTL Translation Folder"
+                };
 
-            if (dialog.ShowDialog() == true)
+                if (dialog.ShowDialog(Application.Current.MainWindow) == true)
+                {
+                    int merged = _mtlImporter.ImportMtlFolder(dialog.FolderName, Project);
+                    MessageBox.Show($"Successfully merged {merged} translation lines from MTL folder.", "Import Finished", MessageBoxButton.OK, MessageBoxImage.Information);
+                    UpdateStats();
+                    
+                    _settingsService.CurrentSettings.LastMtlFile = dialog.FolderName;
+                    _settingsService.SaveSettings();
+                }
+            }
+            catch (Exception ex)
             {
-                int merged = _mtlImporter.ImportMtlFolder(dialog.FolderName, Project);
-                MessageBox.Show($"Successfully merged {merged} translation lines from MTL folder.", "Import Finished", MessageBoxButton.OK, MessageBoxImage.Information);
-                UpdateStats();
-                
-                _settingsService.CurrentSettings.LastMtlFile = dialog.FolderName;
-                _settingsService.SaveSettings();
+                MessageBox.Show($"Lỗi khi import MTL: {ex.Message}\n\nStack Trace:\n{ex.StackTrace}", "Lỗi Hệ Thống", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -332,25 +346,32 @@ namespace Nelir.ViewModels
         {
             if (!IsProjectLoaded) return;
 
-            var dialog = new SaveFileDialog
+            try
             {
-                Filter = "JSON Files (*.json)|*.json",
-                Title = "Export Translation Flat JSON",
-                FileName = "translations.json"
-            };
-
-            if (dialog.ShowDialog() == true)
-            {
-                _exportService.ExportFlatJson(Project, dialog.FileName);
-                
-                // Save manually also clears dirty changes flags since they are safe
-                foreach (var row in Project.AllRows)
+                var dialog = new SaveFileDialog
                 {
-                    row.IsDirty = false;
-                }
-                AutoSaveStatus = "Saved changes successfully";
+                    Filter = "JSON Files (*.json)|*.json",
+                    Title = "Export Translation Flat JSON",
+                    FileName = "translations.json"
+                };
 
-                MessageBox.Show("Flat translation JSON exported successfully.", "Export Successful", MessageBoxButton.OK, MessageBoxImage.Information);
+                if (dialog.ShowDialog(Application.Current.MainWindow) == true)
+                {
+                    _exportService.ExportFlatJson(Project, dialog.FileName);
+                    
+                    // Save manually also clears dirty changes flags since they are safe
+                    foreach (var row in Project.AllRows)
+                    {
+                        row.IsDirty = false;
+                    }
+                    AutoSaveStatus = "Saved changes successfully";
+
+                    MessageBox.Show("Flat translation JSON exported successfully.", "Export Successful", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Lỗi khi xuất flat JSON: {ex.Message}\n\nStack Trace:\n{ex.StackTrace}", "Lỗi Hệ Thống", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -359,43 +380,50 @@ namespace Nelir.ViewModels
         {
             if (!IsProjectLoaded) return;
 
-            var dialog = new OpenFolderDialog
+            try
             {
-                Title = "Select Output Folder for Translated Game Files"
-            };
-
-            if (dialog.ShowDialog() == true)
-            {
-                string outputDir = dialog.FolderName;
-
-                if (outputDir.Equals(Project.DataFolderPath, StringComparison.OrdinalIgnoreCase))
+                var dialog = new OpenFolderDialog
                 {
-                    var warningResult = MessageBox.Show(
-                        "Selecting the original 'data' folder may overwrite your raw game files. It is highly recommended to output to a separate directory. Proceed anyway?",
-                        "Warning: Overwrite Game Files",
-                        MessageBoxButton.YesNo,
-                        MessageBoxImage.Warning);
+                    Title = "Select Output Folder for Translated Game Files"
+                };
 
-                    if (warningResult == MessageBoxResult.No)
+                if (dialog.ShowDialog(Application.Current.MainWindow) == true)
+                {
+                    string outputDir = dialog.FolderName;
+
+                    if (outputDir.Equals(Project.DataFolderPath, StringComparison.OrdinalIgnoreCase))
                     {
-                        return;
+                        var warningResult = MessageBox.Show(
+                            "Selecting the original 'data' folder may overwrite your raw game files. It is highly recommended to output to a separate directory. Proceed anyway?",
+                            "Warning: Overwrite Game Files",
+                            MessageBoxButton.YesNo,
+                            MessageBoxImage.Warning);
+
+                        if (warningResult == MessageBoxResult.No)
+                        {
+                            return;
+                        }
+                    }
+
+                    IsBusy = true;
+                    try
+                    {
+                        int filesWritten = _exportService.ExportToGameFiles(Project, outputDir);
+                        MessageBox.Show($"Successfully wrote translation back into {filesWritten} game files.", "Export Successful", MessageBoxButton.OK, MessageBoxImage.Information);
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"Failed to export: {ex.Message}", "Export Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+                    finally
+                    {
+                        IsBusy = false;
                     }
                 }
-
-                IsBusy = true;
-                try
-                {
-                    int filesWritten = _exportService.ExportToGameFiles(Project, outputDir);
-                    MessageBox.Show($"Successfully wrote translation back into {filesWritten} game files.", "Export Successful", MessageBoxButton.OK, MessageBoxImage.Information);
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"Failed to export: {ex.Message}", "Export Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                }
-                finally
-                {
-                    IsBusy = false;
-                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Lỗi khi xuất Game Data: {ex.Message}\n\nStack Trace:\n{ex.StackTrace}", "Lỗi Hệ Thống", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 

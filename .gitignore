@@ -1,0 +1,25 @@
+## Build outputs
+bin/
+obj/
+*.exe
+*.dll
+*.pdb
+*.msi
+*.nupkg
+
+## User-specific / Settings files
+*.user
+*.userosscache
+*.suo
+*.sln.docstates
+*.nolir_autosave.json
+
+## IDEs and editors
+.vs/
+.idea/
+.vscode/
+
+## OS files
+Thumbs.db
+ehthumbs.db
+Desktop.ini

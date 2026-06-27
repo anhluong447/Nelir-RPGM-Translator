@@ -1,0 +1,38 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- Primitive Grays / Dark theme base -->
+    <Color x:Key="BaseColor">#11111b</Color>
+    <Color x:Key="SurfaceColor">#1e1e2e</Color>
+    <Color x:Key="MantleColor">#181825</Color>
+    <Color x:Key="CrustColor">#111119</Color>
+
+    <!-- Foreground / Text colors -->
+    <Color x:Key="TextPrimaryColor">#cdd6f4</Color>
+    <Color x:Key="TextSecondaryColor">#a6adc8</Color>
+    <Color x:Key="TextTertiaryColor">#7f849c</Color>
+    <Color x:Key="TextDisabledColor">#585b70</Color>
+
+    <!-- Accents -->
+    <Color x:Key="AccentColor">#89b4fa</Color>
+    <Color x:Key="AccentHoverColor">#b4befe</Color>
+    <Color x:Key="AccentMutedColor">#2e3c64</Color>
+    <Color x:Key="LavenderColor">#cba6f7</Color>
+    <Color x:Key="LavenderMutedColor">#3c2f56</Color>
+
+    <!-- Statuses -->
+    <Color x:Key="SuccessColor">#a6e3a1</Color>
+    <Color x:Key="SuccessMutedColor">#233a2d</Color>
+
+    <Color x:Key="DangerColor">#f38ba8</Color>
+    <Color x:Key="DangerMutedColor">#4c243b</Color>
+
+    <Color x:Key="WarningColor">#f9e2af</Color>
+    <Color x:Key="WarningMutedColor">#483b2e</Color>
+
+    <Color x:Key="BorderSubtleColor">#2d2d3e</Color>
+    <Color x:Key="BorderDefaultColor">#313244</Color>
+    <Color x:Key="BorderStrongColor">#45475a</Color>
+    <Color x:Key="BorderFocusColor">#cba6f7</Color>
+
+</ResourceDictionary>

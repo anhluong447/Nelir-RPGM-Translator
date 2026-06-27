@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace Nelir.Models
@@ -10,13 +10,18 @@ namespace Nelir.Models
         public bool IsLoaded { get; set; }
         
         [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(DisplayName))]
         private int _totalRows;
+
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(DisplayName))]
+        private int _translatedRows;
 
         [ObservableProperty]
         private ObservableCollection<FileNode> _children = [];
 
         // Display string showing row count stats next to file name
-        public string DisplayName => TotalRows > 0 ? $"{FileName} ({TotalRows})" : FileName;
+        public string DisplayName => TotalRows > 0 ? $"{FileName} ({TranslatedRows}/{TotalRows})" : FileName;
     }
 }
 

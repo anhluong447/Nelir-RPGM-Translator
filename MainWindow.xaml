@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:converters="clr-namespace:Nelir.Converters"
         xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+        xmlns:views="clr-namespace:Nelir.Views"
         mc:Ignorable="d"
         Title="Nelir's RPGM Translator v1.0" Height="800" Width="1400"
         WindowStartupLocation="CenterScreen"
@@ -53,7 +54,9 @@
                     <Button Content="💾 Xuất flat JSON" Style="{StaticResource ButtonSecondary}"
                             Command="{Binding ExportFlatCommand}" IsEnabled="{Binding IsProjectLoaded}" Margin="0,0,10,0"/>
                     <Button Content="🔍 Tìm &amp; Thay thế" Style="{StaticResource ButtonSecondary}"
-                            Click="FindReplaceButton_Click" IsEnabled="{Binding IsProjectLoaded}"/>
+                            Click="FindReplaceButton_Click" IsEnabled="{Binding IsProjectLoaded}" Margin="0,0,10,0"/>
+                    <Button Content="📚 Thuật ngữ (Glossary)" Style="{StaticResource ButtonSecondary}"
+                            Command="{Binding OpenGlossaryCommand}" IsEnabled="{Binding IsProjectLoaded}"/>
                     
                     <!-- Search Box -->
                     <Border BorderBrush="{StaticResource BorderDefault}" BorderThickness="1" 
@@ -193,7 +196,7 @@
                         <DataGridTemplateColumn Header="Nội dung gốc (RAW)" Width="2*" MinWidth="300" IsReadOnly="True">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <TextBlock Text="{Binding DisplayRawText}" Style="{StaticResource TextBody}" TextWrapping="Wrap"/>
+                                    <views:GlossaryTextBlock OriginalText="{Binding DisplayRawText}" Glossary="{Binding DataContext.Glossary.Lookup, RelativeSource={RelativeSource AncestorType=DataGrid}}" Style="{StaticResource TextBody}" TextWrapping="Wrap"/>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>

@@ -25,9 +25,13 @@ namespace Nelir.ViewModels
         private readonly ExportService _exportService;
         private readonly AppSettingsService _settingsService;
         private AutoSaveService? _autoSaveService;
+        private readonly System.Windows.Threading.DispatcherTimer _searchDebounceTimer;
 
         [ObservableProperty]
         private ProjectState _project;
+
+        [ObservableProperty]
+        private GlossaryService _glossary;
 
         [ObservableProperty]
         private ObservableCollection<FileNode> _fileTree;
@@ -67,6 +71,7 @@ namespace Nelir.ViewModels
             _settingsService = new AppSettingsService();
             
             _project = new ProjectState();
+            _glossary = new GlossaryService();
             _fileTree = new ObservableCollection<FileNode>();
 
             // Setup collection view for filtering and sorting
@@ -75,6 +80,12 @@ namespace Nelir.ViewModels
             RowsView.GroupDescriptions.Add(new PropertyGroupDescription(nameof(TranslationRow.SourceFile)));
             RowsView.SortDescriptions.Add(new System.ComponentModel.SortDescription(nameof(TranslationRow.SourceFile), System.ComponentModel.ListSortDirection.Ascending));
             RowsView.SortDescriptions.Add(new System.ComponentModel.SortDescription(nameof(TranslationRow.RowIndex), System.ComponentModel.ListSortDirection.Ascending));
+
+            _searchDebounceTimer = new System.Windows.Threading.DispatcherTimer
+            {
+                Interval = TimeSpan.FromMilliseconds(300)
+            };
+            _searchDebounceTimer.Tick += SearchDebounceTimer_Tick;
 
             // Load last settings if available
             var settings = _settingsService.CurrentSettings;
@@ -91,6 +102,13 @@ namespace Nelir.ViewModels
 
         partial void OnSearchQueryChanged(string value)
         {
+            _searchDebounceTimer.Stop();
+            _searchDebounceTimer.Start();
+        }
+
+        private void SearchDebounceTimer_Tick(object? sender, EventArgs e)
+        {
+            _searchDebounceTimer.Stop();
             RowsView.Refresh();
         }
 
@@ -227,7 +245,8 @@ namespace Nelir.ViewModels
                                 FileName = file,
                                 FilePath = fullPath,
                                 IsLoaded = true,
-                                TotalRows = translatableCount
+                                TotalRows = translatableCount,
+                                TranslatedRows = parsedRows.Count(r => r.RowType != RowType.SectionHeader && !string.IsNullOrEmpty(r.TranslationText))
                             });
                         }
                     }
@@ -235,6 +254,7 @@ namespace Nelir.ViewModels
 
                 // Clear and update project state
                 Project.DataFolderPath = folderPath;
+                Glossary.Load(folderPath);
                 Project.LoadedFiles = files;
                 Project.AllRows.Clear();
                 Project.RowIndex.Clear();
@@ -259,7 +279,8 @@ namespace Nelir.ViewModels
                 {
                     FileName = "Data Folder",
                     FilePath = string.Empty, // Empty represents All Files root
-                    TotalRows = translatableTotal
+                    TotalRows = translatableTotal,
+                    TranslatedRows = allRowsList.Count(r => r.RowType != RowType.SectionHeader && !string.IsNullOrEmpty(r.TranslationText))
                 };
                 foreach (var node in treeNodes)
                 {
@@ -298,6 +319,7 @@ namespace Nelir.ViewModels
                         int restoredCount = _mtlImporter.ImportMtl(autosaveFile, Project);
                         MessageBox.Show($"Restored {restoredCount} translations from auto-save backup.", "Restore Successful", MessageBoxButton.OK, MessageBoxImage.Information);
                         UpdateStats();
+                        UpdateAllFileNodesStats();
                     }
                 }
             }
@@ -317,7 +339,38 @@ namespace Nelir.ViewModels
             {
                 UpdateStats();
                 AutoSaveStatus = "Unsaved Changes";
+                if (sender is TranslationRow row)
+                {
+                    UpdateFileNodeStats(row.SourceFile);
+                }
             }
+        }
+
+        private void UpdateFileNodeStats(string sourceFile)
+        {
+            var rootNode = FileTree.FirstOrDefault();
+            if (rootNode == null) return;
+
+            var fileNode = rootNode.Children.FirstOrDefault(c => c.FileName == sourceFile);
+            if (fileNode != null)
+            {
+                fileNode.TranslatedRows = Project.AllRows.Count(r => r.SourceFile == sourceFile && r.RowType != RowType.SectionHeader && !string.IsNullOrEmpty(r.TranslationText));
+            }
+
+            rootNode.TranslatedRows = Project.AllRows.Count(r => r.RowType != RowType.SectionHeader && !string.IsNullOrEmpty(r.TranslationText));
+        }
+
+        private void UpdateAllFileNodesStats()
+        {
+            var rootNode = FileTree.FirstOrDefault();
+            if (rootNode == null) return;
+
+            foreach (var child in rootNode.Children)
+            {
+                child.TranslatedRows = Project.AllRows.Count(r => r.SourceFile == child.FileName && r.RowType != RowType.SectionHeader && !string.IsNullOrEmpty(r.TranslationText));
+            }
+
+            rootNode.TranslatedRows = Project.AllRows.Count(r => r.RowType != RowType.SectionHeader && !string.IsNullOrEmpty(r.TranslationText));
         }
 
         private void AutoSaveService_AutoSaveCompleted(object? sender, DateTime time)
@@ -359,6 +412,7 @@ namespace Nelir.ViewModels
                     int merged = _mtlImporter.ImportMtlFolder(dialog.FolderName, Project);
                     MessageBox.Show($"Successfully merged {merged} translation lines from MTL folder.", "Import Finished", MessageBoxButton.OK, MessageBoxImage.Information);
                     UpdateStats();
+                    UpdateAllFileNodesStats();
                     
                     _settingsService.CurrentSettings.LastMtlFile = dialog.FolderName;
                     _settingsService.SaveSettings();
@@ -391,6 +445,14 @@ namespace Nelir.ViewModels
             {
                 MessageBox.Show($"Lỗi khi mở hộp thoại xuất JSON: {ex.Message}\n\nStack Trace:\n{ex.StackTrace}", "Lỗi Hệ Thống", MessageBoxButton.OK, MessageBoxImage.Error);
             }
+        }
+
+        [RelayCommand]
+        private void OpenGlossary()
+        {
+            if (!IsProjectLoaded) return;
+            var window = new GlossaryWindow(Glossary);
+            window.ShowDialog();
         }
 
         [RelayCommand]

@@ -139,10 +139,29 @@ namespace Nelir.ViewModels
                 if (!string.IsNullOrEmpty(_settingsService.CurrentSettings.LastDataFolder) && 
                     Directory.Exists(_settingsService.CurrentSettings.LastDataFolder))
                 {
-                    dialog.InitialDirectory = _settingsService.CurrentSettings.LastDataFolder;
+                    try
+                    {
+                        dialog.InitialDirectory = Path.GetFullPath(_settingsService.CurrentSettings.LastDataFolder);
+                    }
+                    catch
+                    {
+                        // Ignore normalization errors
+                    }
                 }
 
-                if (dialog.ShowDialog(Application.Current.MainWindow) == true)
+                bool? result = null;
+                try
+                {
+                    result = dialog.ShowDialog(Application.Current.MainWindow);
+                }
+                catch (Exception)
+                {
+                    // Fallback: Clear InitialDirectory and retry
+                    dialog.InitialDirectory = null;
+                    result = dialog.ShowDialog(Application.Current.MainWindow);
+                }
+
+                if (result == true)
                 {
                     await LoadFolderAsync(dialog.FolderName);
                 }

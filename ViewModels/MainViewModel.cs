@@ -133,11 +133,14 @@ namespace Nelir.ViewModels
             {
                 var dialog = new OpenFolderDialog
                 {
-                    Title = "Select RPGMaker Game 'data' Folder",
-                    InitialDirectory = Directory.Exists(_settingsService.CurrentSettings.LastDataFolder) 
-                        ? _settingsService.CurrentSettings.LastDataFolder 
-                        : string.Empty
+                    Title = "Select RPGMaker Game 'data' Folder"
                 };
+
+                if (!string.IsNullOrEmpty(_settingsService.CurrentSettings.LastDataFolder) && 
+                    Directory.Exists(_settingsService.CurrentSettings.LastDataFolder))
+                {
+                    dialog.InitialDirectory = _settingsService.CurrentSettings.LastDataFolder;
+                }
 
                 if (dialog.ShowDialog(Application.Current.MainWindow) == true)
                 {

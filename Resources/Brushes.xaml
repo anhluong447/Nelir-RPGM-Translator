@@ -12,8 +12,8 @@
     <SolidColorBrush x:Key="TextSecondary" Color="{StaticResource TextSecondaryColor}"/>
     <SolidColorBrush x:Key="TextTertiary" Color="{StaticResource TextTertiaryColor}"/>
     <SolidColorBrush x:Key="TextDisabled" Color="{StaticResource TextDisabledColor}"/>
-    <SolidColorBrush x:Key="TextOnAccent" Color="#11111b"/>
-    <SolidColorBrush x:Key="TextOnSecondaryAccent" Color="#11111b"/>
+    <SolidColorBrush x:Key="TextOnAccent" Color="#ffffff"/>
+    <SolidColorBrush x:Key="TextOnSecondaryAccent" Color="#ffffff"/>
 
     <!-- Border Brushes -->
     <SolidColorBrush x:Key="BorderSubtle" Color="{StaticResource BorderSubtleColor}"/>
@@ -27,7 +27,7 @@
     <SolidColorBrush x:Key="AccentMuted" Color="{StaticResource AccentMutedColor}"/>
     
     <SolidColorBrush x:Key="SecondaryAccent" Color="{StaticResource LavenderColor}"/>
-    <SolidColorBrush x:Key="SecondaryAccentHover" Color="#dcbcf9"/>
+    <SolidColorBrush x:Key="SecondaryAccentHover" Color="#938cf0"/>
     <SolidColorBrush x:Key="SecondaryAccentMuted" Color="{StaticResource LavenderMutedColor}"/>
 
     <!-- Statuses -->

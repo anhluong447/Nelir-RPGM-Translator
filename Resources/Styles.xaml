@@ -92,7 +92,7 @@
         <Setter Property="Foreground" Value="{StaticResource TextOnAccent}"/>
         <Style.Triggers>
             <Trigger Property="IsMouseOver" Value="True">
-                <Setter Property="Background" Value="#ff9ebd"/>
+                <Setter Property="Background" Value="#b91c1c"/>
             </Trigger>
         </Style.Triggers>
     </Style>

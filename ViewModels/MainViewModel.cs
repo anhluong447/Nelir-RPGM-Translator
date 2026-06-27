@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -74,11 +74,7 @@ namespace Nelir.ViewModels
 
             // Load last settings if available
             var settings = _settingsService.CurrentSettings;
-            if (!string.IsNullOrEmpty(settings.LastDataFolder) && Directory.Exists(settings.LastDataFolder))
-            {
-                // Defer folder loading until View is ready, or run it
-                _ = LoadFolderAsync(settings.LastDataFolder);
-            }
+            // Folder loading is deferred. The application will start clean.
         }
 
         partial void OnSelectedFileChanged(FileNode? value)
@@ -252,7 +248,7 @@ namespace Nelir.ViewModels
                 UpdateStats();
 
                 // Check for existing autosave file to restore
-                string autosaveFile = Path.Combine(folderPath, ".nolir_autosave.json");
+                string autosaveFile = Path.Combine(folderPath, ".nelir_autosave.json");
                 if (File.Exists(autosaveFile))
                 {
                     var result = MessageBox.Show(
@@ -315,19 +311,18 @@ namespace Nelir.ViewModels
         {
             if (!IsProjectLoaded) return;
 
-            var dialog = new OpenFileDialog
+            var dialog = new OpenFolderDialog
             {
-                Filter = "JSON Files (*.json)|*.json|All Files (*.*)|*.*",
-                Title = "Import MTL Translation Flat JSON"
+                Title = "Select MTL Translation Folder"
             };
 
             if (dialog.ShowDialog() == true)
             {
-                int merged = _mtlImporter.ImportMtl(dialog.FileName, Project);
-                MessageBox.Show($"Successfully merged {merged} translation lines from MTL.", "Import Finished", MessageBoxButton.OK, MessageBoxImage.Information);
+                int merged = _mtlImporter.ImportMtlFolder(dialog.FolderName, Project);
+                MessageBox.Show($"Successfully merged {merged} translation lines from MTL folder.", "Import Finished", MessageBoxButton.OK, MessageBoxImage.Information);
                 UpdateStats();
                 
-                _settingsService.CurrentSettings.LastMtlFile = dialog.FileName;
+                _settingsService.CurrentSettings.LastMtlFile = dialog.FolderName;
                 _settingsService.SaveSettings();
             }
         }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -56,7 +56,7 @@ namespace Nelir.Services
 
             try
             {
-                string autosavePath = Path.Combine(_projectState.DataFolderPath, ".nolir_autosave.json");
+                string autosavePath = Path.Combine(_projectState.DataFolderPath, ".nelir_autosave.json");
                 _exportService.ExportFlatJson(_projectState, autosavePath);
 
                 // Reset the IsDirty flags on UI thread safely

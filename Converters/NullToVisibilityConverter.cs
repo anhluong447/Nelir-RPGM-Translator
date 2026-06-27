@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Data;
@@ -10,6 +10,11 @@ namespace Nelir.Converters
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             if (value == null)
+            {
+                return Visibility.Collapsed;
+            }
+
+            if (value is bool b && !b)
             {
                 return Visibility.Collapsed;
             }
@@ -32,13 +37,23 @@ namespace Nelir.Converters
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            return value is bool b && !b;
+            bool isVisible = true;
+            if (value is bool b)
+            {
+                isVisible = b;
+            }
+
+            if (parameter?.ToString()?.Equals("invert", StringComparison.OrdinalIgnoreCase) == true)
+            {
+                isVisible = !isVisible;
+            }
+
+            return isVisible ? Visibility.Visible : Visibility.Collapsed;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            return value is bool b && !b;
+            throw new NotImplementedException();
         }
     }
 }
-

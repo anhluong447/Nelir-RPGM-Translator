@@ -333,6 +333,62 @@
                 <TextBlock Grid.Column="2" Text="{Binding AutoSaveStatus}" Style="{StaticResource TextCaption}" Foreground="{StaticResource TextSecondary}" VerticalAlignment="Center"/>
             </Grid>
         </Border>
+
+        <!-- ======================================================================= -->
+        <!-- PREMIUM LOADING OVERLAY                                                 -->
+        <!-- ======================================================================= -->
+        <Grid Grid.Row="0" Grid.RowSpan="3" Background="#CCF8F6F0" Focusable="True"
+              Visibility="{Binding IsBusy, Converter={StaticResource NullToVisibilityConverter}}">
+            <Border HorizontalAlignment="Center" VerticalAlignment="Center" 
+                    Background="{StaticResource BgSurface}" BorderBrush="{StaticResource BorderDefault}" BorderThickness="1"
+                    CornerRadius="{StaticResource RadiusMd}" Padding="35" Width="550">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="30" Color="#10000000" Opacity="0.15" ShadowDepth="5"/>
+                </Border.Effect>
+                
+                <StackPanel>
+                    <!-- Spinner / Header Info -->
+                    <Grid Margin="0,0,0,25">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="ĐANG XỬ LÝ DỮ LIỆU" Style="{StaticResource TextLabel}" 
+                                       Foreground="{StaticResource Accent}" FontWeight="Bold" Margin="0,0,0,4"/>
+                            <TextBlock Text="{Binding BusyStatus}" FontSize="18" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}"/>
+                        </StackPanel>
+                        <!-- Premium visual loader accent -->
+                        <ProgressBar Grid.Column="1" IsIndeterminate="True" Width="28" Height="28" 
+                                     Background="Transparent" BorderThickness="0" VerticalAlignment="Center"
+                                     Foreground="{StaticResource Accent}"/>
+                    </Grid>
+
+                    <!-- File Details -->
+                    <TextBlock Text="{Binding BusyDetail}" Style="{StaticResource TextBodySecondary}" FontWeight="Medium" Margin="0,0,0,8"/>
+
+                    <!-- Visual Progress Bar -->
+                    <ProgressBar Height="10" Minimum="0" Maximum="100" Value="{Binding BusyProgress}"
+                                 Foreground="{StaticResource Accent}" Background="{StaticResource BgSunken}"
+                                 BorderThickness="0"/>
+
+                    <Grid Margin="0,8,0,25">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="Tiến trình hoàn thành" Style="{StaticResource TextCaption}" Foreground="{StaticResource TextTertiary}"/>
+                        <TextBlock Grid.Column="1" Text="{Binding BusyProgress, StringFormat={}{0:F0}%}" Style="{StaticResource TextCaption}" Foreground="{StaticResource TextSecondary}" FontWeight="Bold"/>
+                    </Grid>
+
+                    <Border Background="{StaticResource BgSunken}" CornerRadius="{StaticResource RadiusSm}" Padding="15,12" BorderThickness="0">
+                        <StackPanel>
+                            <TextBlock Text="HIỆU NĂNG &amp; BOTTLENECK DEBUG" Style="{StaticResource TextCaption}" Foreground="{StaticResource Accent}" FontWeight="Bold" Margin="0,0,0,6"/>
+                            <TextBlock Text="{Binding BusyPerformanceText}" Style="{StaticResource TextCaption}" Foreground="{StaticResource TextSecondary}" TextWrapping="Wrap"/>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </Border>
+        </Grid>
     </Grid>
 </Window>
-

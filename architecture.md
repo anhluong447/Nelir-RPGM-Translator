@@ -29,12 +29,12 @@ graph TD
 
 ### 2. ViewModels (Logic & State Controllers)
 *   [MainViewModel](file:///d:/Shits/Prj/Nelir-RPGM-Translator/Nelir/ViewModels/MainViewModel.cs):
-    - Manages the application states (`IsProjectLoaded`, `IsBusy`, `FileTree`, `SelectedFile`, `SearchQuery`, `Glossary`).
+    - Manages the application states (`IsProjectLoaded`, `IsBusy`, `BusyStatus`, `BusyDetail`, `BusyProgress`, `BusyPerformanceText`, `FileTree`, `SelectedFile`, `SearchQuery`, `Glossary`).
     - Commands: `SelectFolderCommand` (Load RAW), `ImportMtlCommand` (Load MTL), `ExportFlatCommand` (Launch Selective Export), `OpenGlossaryCommand` (Manage Glossary).
     - Exposes `RowsView` (WPF `ICollectionView`) configured with a filter predicate (`FilterRows`), grouping descriptions (`SourceFile`), and sort descriptions (`SourceFile` ascending, `RowIndex` ascending).
 
 ### 3. Views (UI Layers)
-*   [MainWindow](file:///d:/Shits/Prj/Nelir-RPGM-Translator/Nelir/Views/MainWindow.xaml): Host grid, sidebar TreeView, toolbar buttons, and main DataGrid. Replaces raw TextBlock in RAW column with custom `GlossaryTextBlock`.
+*   [MainWindow](file:///d:/Shits/Prj/Nelir-RPGM-Translator/Nelir/Views/MainWindow.xaml): Host grid, sidebar TreeView, toolbar buttons, main DataGrid, and the premium overlay progress card blocking interaction during long-running tasks. Replaces raw TextBlock in RAW column with custom `GlossaryTextBlock`.
 *   [FindReplaceDialog](file:///d:/Shits/Prj/Nelir-RPGM-Translator/Nelir/Views/FindReplaceDialog.xaml): Floating dialog for search and replace actions.
 *   [ExportSelectionWindow](file:///d:/Shits/Prj/Nelir-RPGM-Translator/Nelir/Views/ExportSelectionWindow.xaml): Directory selection and file checklist popup.
 *   [GlossaryWindow](file:///d:/Shits/Prj/Nelir-RPGM-Translator/Nelir/Views/GlossaryWindow.xaml): Modal dialog displaying list of terms in an editable DataGrid.
@@ -43,7 +43,7 @@ graph TD
 ### 4. Services (Business Logic)
 *   [RpgmParser](file:///d:/Shits/Prj/Nelir-RPGM-Translator/Nelir/Services/RpgmParser.cs): Decodes RPG Maker MZ/MV JSON files. Extracts dialogue codes (e.g., `401`), choices (`102/402`), and developer comments (`108/408`), resolving name tags via standard regexes (`\\nc<Speaker>Text`).
 *   [ExportService](file:///d:/Shits/Prj/Nelir-RPGM-Translator/Nelir/Services/ExportService.cs): Handles exporting selected files to flat translation dictionaries (`UniqueKey` -> `TranslationText`).
-*   [AutoSaveService](file:///d:/Shits/Prj/Nelir-RPGM-Translator/Nelir/Services/AutoSaveService.cs): Periodically writes dirty rows to a local hidden backup file (`.nelir_autosave.json`) inside the RAW folder.
+*   [AutoSaveService](file:///d:/Shits/Prj/Nelir-RPGM-Translator/Nelir/Services/AutoSaveService.cs): Periodically writes dirty rows to a local hidden backup file (`.nelir_autosave.json`) inside the RAW folder. Restores back manual translations directly to the `TranslationText` (TRANSLATED) column.
 *   [GlossaryService](file:///d:/Shits/Prj/Nelir-RPGM-Translator/Nelir/Services/GlossaryService.cs): JSON deserializer and manager for `glossary.json` in the raw folder. Exposes lookup dictionary for cell binding.
 
 ---
@@ -61,9 +61,11 @@ sequenceDiagram
 
     User->>MainVM: Click "Thư mục RAW (Đọc)"
     MainVM->>MainVM: Prompt Folder dialog
-    MainVM->>RpgmParser: Parse *.json in folder
-    RpgmParser->>RpgmParser: Extract codes (401, 102/402, 108/408)
+    MainVM->>MainVM: Set IsBusy = true & initialize progress values
+    MainVM->>RpgmParser: Parse *.json in folder (asynchronously)
+    Note over MainVM, RpgmParser: Updates progress (file sizes, elapsed time, parsing speeds)
     RpgmParser->>ProjectState: Populate AllRows
+    MainVM->>MainVM: Check for autosave and prompt User to restore to TranslationText
     MainVM->>MainVM: Refresh File Tree & DataGrid
 ```
 

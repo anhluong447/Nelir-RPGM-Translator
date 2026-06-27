@@ -200,6 +200,10 @@ namespace Nelir.ViewModels
         private async Task LoadFolderAsync(string folderPath)
         {
             IsBusy = true;
+            BusyStatus = "Đang đọc các tệp tin game (RAW)...";
+            BusyDetail = "Đang chuẩn bị danh sách tệp...";
+            BusyProgress = 0;
+            BusyPerformanceText = string.Empty;
             ErrorMessage = null;
             IsProjectLoaded = false;
 
@@ -230,9 +234,22 @@ namespace Nelir.ViewModels
                 // Parse on background thread to keep UI interactive
                 await Task.Run(() =>
                 {
+                    int totalFiles = files.Count;
+                    int filesProcessed = 0;
+                    int totalRowsParsed = 0;
+                    var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+
                     foreach (var file in files)
                     {
                         string fullPath = Path.Combine(folderPath, file);
+                        long fileSizeKB = new FileInfo(fullPath).Length / 1024;
+
+                        App.Current.Dispatcher.Invoke(() =>
+                        {
+                            BusyDetail = $"{file} ({fileSizeKB:N0} KB)";
+                            BusyProgress = (double)filesProcessed / totalFiles * 100;
+                        });
+
                         var parsedRows = _parser.ParseFile(fullPath);
                         if (parsedRows.Count > 0)
                         {
@@ -249,6 +266,16 @@ namespace Nelir.ViewModels
                                 TranslatedRows = parsedRows.Count(r => r.RowType != RowType.SectionHeader && !string.IsNullOrEmpty(r.TranslationText))
                             });
                         }
+
+                        filesProcessed++;
+                        totalRowsParsed += parsedRows.Count;
+                        double elapsedSec = stopwatch.Elapsed.TotalSeconds;
+                        double speed = elapsedSec > 0 ? (totalRowsParsed / elapsedSec) : 0;
+
+                        App.Current.Dispatcher.Invoke(() =>
+                        {
+                            BusyPerformanceText = $"Thời gian: {elapsedSec:F2}s | Đã đọc: {totalRowsParsed:N0} dòng | Tốc độ: {speed:F0} dòng/giây";
+                        });
                     }
                 });
 
@@ -316,7 +343,7 @@ namespace Nelir.ViewModels
 
                     if (result == MessageBoxResult.Yes)
                     {
-                        int restoredCount = _mtlImporter.ImportMtl(autosaveFile, Project);
+                        int restoredCount = RestoreBackup(autosaveFile);
                         MessageBox.Show($"Restored {restoredCount} translations from auto-save backup.", "Restore Successful", MessageBoxButton.OK, MessageBoxImage.Information);
                         UpdateStats();
                         UpdateAllFileNodesStats();
@@ -331,6 +358,32 @@ namespace Nelir.ViewModels
             {
                 IsBusy = false;
             }
+        }
+
+        private int RestoreBackup(string backupFilePath)
+        {
+            int restoredCount = 0;
+            try
+            {
+                if (!File.Exists(backupFilePath)) return 0;
+                string content = File.ReadAllText(backupFilePath);
+                var backupData = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, string>>(content);
+                if (backupData == null) return 0;
+
+                foreach (var kvp in backupData)
+                {
+                    if (Project.RowIndex.TryGetValue(kvp.Key, out var row))
+                    {
+                        row.TranslationText = kvp.Value;
+                        restoredCount++;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Lỗi khi khôi phục bản sao lưu: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            return restoredCount;
         }
 
         private void Row_PropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -396,7 +449,7 @@ namespace Nelir.ViewModels
         }
 
         [RelayCommand]
-        private void ImportMtl()
+        private async Task ImportMtl()
         {
             if (!IsProjectLoaded) return;
 
@@ -409,7 +462,47 @@ namespace Nelir.ViewModels
 
                 if (dialog.ShowDialog(Application.Current.MainWindow) == true)
                 {
-                    int merged = _mtlImporter.ImportMtlFolder(dialog.FolderName, Project);
+                    IsBusy = true;
+                    BusyStatus = "Đang gộp dữ liệu bản dịch máy (MTL)...";
+                    BusyProgress = 0;
+                    BusyDetail = "Đang phân tích thư mục...";
+                    BusyPerformanceText = string.Empty;
+
+                    string mtlFolder = dialog.FolderName;
+                    int merged = 0;
+
+                    await Task.Run(() =>
+                    {
+                        var files = Directory.GetFiles(mtlFolder, "*.json");
+                        int totalFiles = files.Length;
+                        int filesProcessed = 0;
+                        var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+
+                        foreach (var file in files)
+                        {
+                            string fileName = Path.GetFileName(file);
+                            long fileSizeKB = new FileInfo(file).Length / 1024;
+
+                            App.Current.Dispatcher.Invoke(() =>
+                            {
+                                BusyDetail = $"{fileName} ({fileSizeKB:N0} KB)";
+                                BusyProgress = (double)filesProcessed / totalFiles * 100;
+                            });
+
+                            int fileMerged = _mtlImporter.ImportSingleMtlFile(file, Project);
+                            merged += fileMerged;
+                            filesProcessed++;
+
+                            double elapsedSec = stopwatch.Elapsed.TotalSeconds;
+                            double speed = elapsedSec > 0 ? (filesProcessed / elapsedSec) : 0;
+
+                            App.Current.Dispatcher.Invoke(() =>
+                            {
+                                BusyPerformanceText = $"Thời gian: {elapsedSec:F2}s | Tệp đã xử lý: {filesProcessed}/{totalFiles} | Tốc độ: {speed:F1} tệp/giây";
+                            });
+                        }
+                    });
+
                     MessageBox.Show($"Successfully merged {merged} translation lines from MTL folder.", "Import Finished", MessageBoxButton.OK, MessageBoxImage.Information);
                     UpdateStats();
                     UpdateAllFileNodesStats();
@@ -421,6 +514,10 @@ namespace Nelir.ViewModels
             catch (Exception ex)
             {
                 MessageBox.Show($"Lỗi khi import MTL: {ex.Message}\n\nStack Trace:\n{ex.StackTrace}", "Lỗi Hệ Thống", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            finally
+            {
+                IsBusy = false;
             }
         }
 

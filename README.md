@@ -14,6 +14,7 @@ A desktop tool built in **WPF (.NET 10.0)** to translate RPG Maker MZ/MV game da
   - Minimalist **Light Mode** theme featuring soft warm-sand accents, clear typography, and responsive hover transitions.
   - Grid separation using **Grouped File Headers** with line statistics.
   - Flexible layout columns (STT, RAW text, MTL, and Edited translation) supporting drag-and-drop column resizing.
+  - Premium **Loading Overlay**: Displays when loading folders or importing MTL translations, reporting active file details (name and size), elapsed time, row throughput speed, and progress percentages to debug bottlenecks.
 * **Sidebar Progress Tracking**:
   - Displays completion progress ratios next to each file and the root folder in the tree view (e.g. `Map001.json (0/4)`).
 * **Find & Replace (Ctrl + F / Ctrl + H)**:
@@ -23,8 +24,9 @@ A desktop tool built in **WPF (.NET 10.0)** to translate RPG Maker MZ/MV game da
   - Automatically loads project-specific `glossary.json` files.
   - Dynamically highlights terms in the RAW column in yellow with detailed hover tooltips showing official translations.
   - Features a dedicated Glossary editor window to easily add, delete, and save definitions.
-* **Background Autosave**:
+* **Background Autosave & Restore**:
   - Automatically saves progress to `.nelir_autosave.json` in the raw folder every 30 seconds to prevent data loss.
+  - Prompts to restore manual translations directly into the **Bản dịch chính thức (TRANSLATED)** column on startup.
 
 ---
 

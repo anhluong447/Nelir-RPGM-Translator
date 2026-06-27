@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace Nelir.ViewModels
 {
@@ -9,6 +9,18 @@ namespace Nelir.ViewModels
 
         [ObservableProperty]
         private string? _errorMessage;
+
+        [ObservableProperty]
+        private string _busyStatus = string.Empty;
+
+        [ObservableProperty]
+        private string _busyDetail = string.Empty;
+
+        [ObservableProperty]
+        private double _busyProgress;
+
+        [ObservableProperty]
+        private string _busyPerformanceText = string.Empty;
     }
 }
 

@@ -91,7 +91,13 @@ namespace Nelir.ViewModels
         {
             if (item is TranslationRow row)
             {
-                // 1. Filter by Selected TreeView Item
+                // 1. Never show Section Headers (Page demarcations and Event markers) in the grid
+                if (row.RowType == RowType.SectionHeader)
+                {
+                    return false;
+                }
+
+                // 2. Filter by Selected TreeView Item
                 if (SelectedFile != null && !string.IsNullOrEmpty(SelectedFile.FilePath))
                 {
                     // If selected node has a filepath, it represents a single file
@@ -101,19 +107,13 @@ namespace Nelir.ViewModels
                     }
                 }
 
-                // 2. Filter by search query
+                // 3. Filter by search query
                 if (!string.IsNullOrEmpty(SearchQuery))
                 {
                     bool isMatch = row.RawText.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase) ||
                                   row.Speaker.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase) ||
                                   row.MtlText.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase) ||
                                   row.TranslationText.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase);
-
-                    // Don't show SectionHeaders when searching unless they are the only things (better to skip)
-                    if (row.RowType == RowType.SectionHeader)
-                    {
-                        return false;
-                    }
 
                     if (!isMatch)
                     {

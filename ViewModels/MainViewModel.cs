@@ -127,7 +127,7 @@ namespace Nelir.ViewModels
         }
 
         [RelayCommand]
-        private async Task SelectFolderCommand()
+        private async Task SelectFolder()
         {
             var dialog = new OpenFolderDialog
             {
@@ -307,7 +307,7 @@ namespace Nelir.ViewModels
         }
 
         [RelayCommand]
-        private void ImportMtlCommand()
+        private void ImportMtl()
         {
             if (!IsProjectLoaded) return;
 
@@ -328,7 +328,7 @@ namespace Nelir.ViewModels
         }
 
         [RelayCommand]
-        private void ExportFlatCommand()
+        private void ExportFlat()
         {
             if (!IsProjectLoaded) return;
 
@@ -355,7 +355,7 @@ namespace Nelir.ViewModels
         }
 
         [RelayCommand]
-        private void ExportGameCommand()
+        private void ExportGame()
         {
             if (!IsProjectLoaded) return;
 

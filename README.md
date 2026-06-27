@@ -14,8 +14,15 @@ A desktop tool built in **WPF (.NET 10.0)** to translate RPG Maker MZ/MV game da
   - Minimalist **Light Mode** theme featuring soft warm-sand accents, clear typography, and responsive hover transitions.
   - Grid separation using **Grouped File Headers** with line statistics.
   - Flexible layout columns (STT, RAW text, MTL, and Edited translation) supporting drag-and-drop column resizing.
+* **Sidebar Progress Tracking**:
+  - Displays completion progress ratios next to each file and the root folder in the tree view (e.g. `Map001.json (0/4)`).
 * **Find & Replace (Ctrl + F / Ctrl + H)**:
   - Tabbed search dialog enabling real-time navigation, case-sensitive matching, and single/bulk replacements.
+  - Search box input is debounced by 300ms to eliminate UI lag.
+* **Interactive Glossary Support**:
+  - Automatically loads project-specific `glossary.json` files.
+  - Dynamically highlights terms in the RAW column in yellow with detailed hover tooltips showing official translations.
+  - Features a dedicated Glossary editor window to easily add, delete, and save definitions.
 * **Background Autosave**:
   - Automatically saves progress to `.nelir_autosave.json` in the raw folder every 30 seconds to prevent data loss.
 
@@ -35,14 +42,14 @@ A desktop tool built in **WPF (.NET 10.0)** to translate RPG Maker MZ/MV game da
 ```
 Nelir-RPGM-Translator/
 ├── Nelir/                      # Core WPF Project
-│   ├── Models/                 # Data schemas (TranslationRow, FileNode, ProjectState)
+│   ├── Models/                 # Data schemas (TranslationRow, FileNode, ProjectState, GlossaryEntry)
 │   ├── ViewModels/             # MainViewModel (UI state, commands, filtering)
-│   ├── Views/                  # MainWindow, FindReplaceDialog, ExportSelectionWindow
-│   ├── Services/               # RpgmParser, ExportService, AutoSaveService, AppSettingsService
+│   ├── Views/                  # MainWindow, FindReplaceDialog, ExportSelectionWindow, GlossaryWindow, GlossaryTextBlock
+│   ├── Services/               # RpgmParser, ExportService, AutoSaveService, AppSettingsService, GlossaryService
 │   ├── Resources/              # Color tokens, styles, geometries, and control templates
 │   ├── Converters/             # WPF Bindings Value Converters
 │   └── Nelir.csproj            # WPF Project Configuration
-├── test_data/                  # Sample RPG Maker JSON files (Map001, CommonEvents)
+├── test_data/                  # Sample RPG Maker JSON files (Map001, CommonEvents, glossary.json)
 └── README.md                   # Project overview
 ```
 

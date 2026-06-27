@@ -25,22 +25,26 @@ graph TD
 *   [FileNode](file:///d:/Shits/Prj/Nelir-RPGM-Translator/Nelir/Models/FileNode.cs): Represents an item in the sidebar TreeView (either the root folder or individual JSON files). Tracks translation statistics (e.g. `TotalRows`, `TranslatedRows`).
 *   [ProjectState](file:///d:/Shits/Prj/Nelir-RPGM-Translator/Nelir/Models/ProjectState.cs): Acts as the in-memory database of the application, holding all loaded `TranslationRow`s and mapping keys.
 *   [ExportFileItem](file:///d:/Shits/Prj/Nelir-RPGM-Translator/Nelir/Models/ExportFileItem.cs): Represents a file entry in the selective export window.
+*   [GlossaryEntry](file:///d:/Shits/Prj/Nelir-RPGM-Translator/Nelir/Models/GlossaryEntry.cs): Represents a translation term pair (Original vs Translated term) with property notifications.
 
 ### 2. ViewModels (Logic & State Controllers)
 *   [MainViewModel](file:///d:/Shits/Prj/Nelir-RPGM-Translator/Nelir/ViewModels/MainViewModel.cs):
-    - Manages the application states (`IsProjectLoaded`, `IsBusy`, `FileTree`, `SelectedFile`, `SearchQuery`).
-    - Commands: `SelectFolderCommand` (Load RAW), `ImportMtlCommand` (Load MTL), `ExportFlatCommand` (Launch Selective Export).
+    - Manages the application states (`IsProjectLoaded`, `IsBusy`, `FileTree`, `SelectedFile`, `SearchQuery`, `Glossary`).
+    - Commands: `SelectFolderCommand` (Load RAW), `ImportMtlCommand` (Load MTL), `ExportFlatCommand` (Launch Selective Export), `OpenGlossaryCommand` (Manage Glossary).
     - Exposes `RowsView` (WPF `ICollectionView`) configured with a filter predicate (`FilterRows`), grouping descriptions (`SourceFile`), and sort descriptions (`SourceFile` ascending, `RowIndex` ascending).
 
 ### 3. Views (UI Layers)
-*   [MainWindow](file:///d:/Shits/Prj/Nelir-RPGM-Translator/Nelir/Views/MainWindow.xaml): Host grid, sidebar TreeView, toolbar buttons, and main DataGrid.
+*   [MainWindow](file:///d:/Shits/Prj/Nelir-RPGM-Translator/Nelir/Views/MainWindow.xaml): Host grid, sidebar TreeView, toolbar buttons, and main DataGrid. Replaces raw TextBlock in RAW column with custom `GlossaryTextBlock`.
 *   [FindReplaceDialog](file:///d:/Shits/Prj/Nelir-RPGM-Translator/Nelir/Views/FindReplaceDialog.xaml): Floating dialog for search and replace actions.
 *   [ExportSelectionWindow](file:///d:/Shits/Prj/Nelir-RPGM-Translator/Nelir/Views/ExportSelectionWindow.xaml): Directory selection and file checklist popup.
+*   [GlossaryWindow](file:///d:/Shits/Prj/Nelir-RPGM-Translator/Nelir/Views/GlossaryWindow.xaml): Modal dialog displaying list of terms in an editable DataGrid.
+*   [GlossaryTextBlock](file:///d:/Shits/Prj/Nelir-RPGM-Translator/Nelir/Views/GlossaryTextBlock.cs): Custom WPF TextBlock that matches glossary keys using regex and highlights them with custom tooltips.
 
 ### 4. Services (Business Logic)
 *   [RpgmParser](file:///d:/Shits/Prj/Nelir-RPGM-Translator/Nelir/Services/RpgmParser.cs): Decodes RPG Maker MZ/MV JSON files. Extracts dialogue codes (e.g., `401`), choices (`102/402`), and developer comments (`108/408`), resolving name tags via standard regexes (`\\nc<Speaker>Text`).
 *   [ExportService](file:///d:/Shits/Prj/Nelir-RPGM-Translator/Nelir/Services/ExportService.cs): Handles exporting selected files to flat translation dictionaries (`UniqueKey` -> `TranslationText`).
 *   [AutoSaveService](file:///d:/Shits/Prj/Nelir-RPGM-Translator/Nelir/Services/AutoSaveService.cs): Periodically writes dirty rows to a local hidden backup file (`.nelir_autosave.json`) inside the RAW folder.
+*   [GlossaryService](file:///d:/Shits/Prj/Nelir-RPGM-Translator/Nelir/Services/GlossaryService.cs): JSON deserializer and manager for `glossary.json` in the raw folder. Exposes lookup dictionary for cell binding.
 
 ---
 
@@ -97,3 +101,29 @@ sequenceDiagram
     ExportService->>Disk: Write Flat JSONs (Key -> Value)
     ExportDialog->>User: Show Success Message
 ```
+
+### 4. Glossary Highlighting & Term Management
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant MainVM
+    participant GlossaryService
+    participant GlossaryWindow
+    participant GlossaryTextBlock
+
+    Note over MainVM, GlossaryService: Loaded on raw folder load
+    MainVM->>GlossaryService: Load(folderPath)
+    GlossaryService->>GlossaryService: Parse glossary.json & compile Lookup Dict
+
+    GlossaryTextBlock->>GlossaryService: Binds to Lookup
+    Note over GlossaryTextBlock: Regex matches & highlights term Runs with Tooltips
+
+    User->>MainVM: Click "📚 Thuật ngữ (Glossary)"
+    MainVM->>GlossaryWindow: Show dialog with Entries
+    User->>GlossaryWindow: Add, edit, or delete terms & Click Save
+    GlossaryWindow->>GlossaryService: Save() & UpdateLookup()
+    GlossaryService->>GlossaryTextBlock: Fires Lookup PropertyChanged
+    Note over GlossaryTextBlock: Instantly redraws highlighted terms in Grid
+```
+

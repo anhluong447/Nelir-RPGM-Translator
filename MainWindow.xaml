@@ -180,7 +180,7 @@
                     
                     <DataGrid.Columns>
                         <!-- Index Column -->
-                        <DataGridTextColumn Header="STT" Binding="{Binding RowIndex}" Width="60" IsReadOnly="True">
+                        <DataGridTextColumn Header="STT" Binding="{Binding RowIndex}" Width="80" MinWidth="50" CanUserResize="True" IsReadOnly="True">
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock" BasedOn="{StaticResource TextMono}">
                                     <Setter Property="HorizontalAlignment" Value="Center"/>

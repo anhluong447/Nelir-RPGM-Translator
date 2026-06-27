@@ -73,6 +73,8 @@ namespace Nelir.ViewModels
             RowsView = CollectionViewSource.GetDefaultView(_project.AllRows);
             RowsView.Filter = FilterRows;
             RowsView.GroupDescriptions.Add(new PropertyGroupDescription(nameof(TranslationRow.SourceFile)));
+            RowsView.SortDescriptions.Add(new System.ComponentModel.SortDescription(nameof(TranslationRow.SourceFile), System.ComponentModel.ListSortDirection.Ascending));
+            RowsView.SortDescriptions.Add(new System.ComponentModel.SortDescription(nameof(TranslationRow.RowIndex), System.ComponentModel.ListSortDirection.Ascending));
 
             // Load last settings if available
             var settings = _settingsService.CurrentSettings;

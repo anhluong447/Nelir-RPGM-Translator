@@ -1,8 +1,8 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Text.Json;
 
-namespace NolirRpgmTranslator.Services
+namespace Nelir.Services
 {
     public class AppSettings
     {
@@ -24,7 +24,7 @@ namespace NolirRpgmTranslator.Services
         public AppSettingsService()
         {
             string appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-            string appDir = Path.Combine(appData, "NolirRpgmTranslator");
+            string appDir = Path.Combine(appData, "Nelir");
             Directory.CreateDirectory(appDir);
             _settingsFilePath = Path.Combine(appDir, "settings.json");
 
@@ -68,3 +68,4 @@ namespace NolirRpgmTranslator.Services
         }
     }
 }
+

@@ -1,9 +1,9 @@
-using System;
+﻿using System;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Data;
 
-namespace NolirRpgmTranslator.Converters
+namespace Nelir.Converters
 {
     public class NullToVisibilityConverter : IValueConverter
     {
@@ -41,3 +41,4 @@ namespace NolirRpgmTranslator.Converters
         }
     }
 }
+

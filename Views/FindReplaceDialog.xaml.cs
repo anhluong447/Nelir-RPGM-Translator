@@ -1,10 +1,10 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using NolirRpgmTranslator.Models;
+using Nelir.Models;
 
-namespace NolirRpgmTranslator.Views
+namespace Nelir.Views
 {
     public partial class FindReplaceDialog : Window
     {
@@ -168,3 +168,4 @@ namespace NolirRpgmTranslator.Views
         }
     }
 }
+

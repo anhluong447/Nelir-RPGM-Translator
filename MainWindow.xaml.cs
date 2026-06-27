@@ -1,10 +1,10 @@
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Input;
-using NolirRpgmTranslator.Models;
-using NolirRpgmTranslator.ViewModels;
-using NolirRpgmTranslator.Views;
+using Nelir.Models;
+using Nelir.ViewModels;
+using Nelir.Views;
 
-namespace NolirRpgmTranslator
+namespace Nelir
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
@@ -61,3 +61,4 @@ namespace NolirRpgmTranslator
         }
     }
 }
+

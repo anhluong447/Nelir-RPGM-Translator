@@ -1,11 +1,11 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Threading;
-using NolirRpgmTranslator.Models;
+using Nelir.Models;
 
-namespace NolirRpgmTranslator.Services
+namespace Nelir.Services
 {
     public class AutoSaveService
     {
@@ -77,3 +77,4 @@ namespace NolirRpgmTranslator.Services
         }
     }
 }
+

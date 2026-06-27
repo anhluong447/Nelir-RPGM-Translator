@@ -1,11 +1,11 @@
-using System;
+﻿using System;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Data;
 using System.Windows.Media;
-using NolirRpgmTranslator.Models;
+using Nelir.Models;
 
-namespace NolirRpgmTranslator.Converters
+namespace Nelir.Converters
 {
     public class RowTypeColorConverter : IValueConverter
     {
@@ -35,3 +35,4 @@ namespace NolirRpgmTranslator.Converters
         }
     }
 }
+

@@ -1,11 +1,11 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using NolirRpgmTranslator.Models;
+using Nelir.Models;
 
-namespace NolirRpgmTranslator.Services
+namespace Nelir.Services
 {
     public class RpgmParser
     {
@@ -330,3 +330,4 @@ namespace NolirRpgmTranslator.Services
         }
     }
 }
+

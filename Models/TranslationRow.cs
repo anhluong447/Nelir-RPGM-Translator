@@ -1,6 +1,6 @@
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 
-namespace NolirRpgmTranslator.Models
+namespace Nelir.Models
 {
     public enum RowType
     {
@@ -54,3 +54,4 @@ namespace NolirRpgmTranslator.Models
         }
     }
 }
+

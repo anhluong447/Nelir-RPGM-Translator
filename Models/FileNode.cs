@@ -1,7 +1,7 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 
-namespace NolirRpgmTranslator.Models
+namespace Nelir.Models
 {
     public partial class FileNode : ObservableObject
     {
@@ -19,3 +19,4 @@ namespace NolirRpgmTranslator.Models
         public string DisplayName => TotalRows > 0 ? $"{FileName} ({TotalRows})" : FileName;
     }
 }
+

@@ -1,7 +1,7 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
-namespace NolirRpgmTranslator.Models
+namespace Nelir.Models
 {
     public class ProjectState
     {
@@ -13,3 +13,4 @@ namespace NolirRpgmTranslator.Models
         public Dictionary<string, TranslationRow> RowIndex { get; set; } = [];
     }
 }
+

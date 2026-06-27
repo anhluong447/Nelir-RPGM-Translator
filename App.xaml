@@ -1,7 +1,7 @@
-<Application x:Class="NolirRpgmTranslator.App"
+﻿<Application x:Class="Nelir.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="clr-namespace:NolirRpgmTranslator">
+             xmlns:local="clr-namespace:Nelir">
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -14,3 +14,4 @@
         </ResourceDictionary>
     </Application.Resources>
 </Application>
+

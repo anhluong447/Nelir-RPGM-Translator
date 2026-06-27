@@ -1,11 +1,11 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Windows;
-using NolirRpgmTranslator.Models;
-using NolirRpgmTranslator.Services;
+using Nelir.Models;
+using Nelir.Services;
 
-namespace NolirRpgmTranslator
+namespace Nelir
 {
     /// <summary>
     /// Interaction logic for App.xaml
@@ -127,3 +127,4 @@ namespace NolirRpgmTranslator
         }
     }
 }
+

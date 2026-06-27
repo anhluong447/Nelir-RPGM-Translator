@@ -1,12 +1,12 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using NolirRpgmTranslator.Models;
+using Nelir.Models;
 
-namespace NolirRpgmTranslator.Services
+namespace Nelir.Services
 {
     public class ExportService
     {
@@ -234,3 +234,4 @@ namespace NolirRpgmTranslator.Services
         }
     }
 }
+

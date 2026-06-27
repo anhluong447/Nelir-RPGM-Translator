@@ -1,4 +1,4 @@
-<Window x:Class="NolirRpgmTranslator.Views.FindReplaceDialog"
+﻿<Window x:Class="Nelir.Views.FindReplaceDialog"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Find &amp; Replace" Height="220" Width="400"
@@ -46,3 +46,4 @@
         </StackPanel>
     </Grid>
 </Window>
+

@@ -1,6 +1,6 @@
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 
-namespace NolirRpgmTranslator.ViewModels
+namespace Nelir.ViewModels
 {
     public partial class ViewModelBase : ObservableObject
     {
@@ -11,3 +11,4 @@ namespace NolirRpgmTranslator.ViewModels
         private string? _errorMessage;
     }
 }
+

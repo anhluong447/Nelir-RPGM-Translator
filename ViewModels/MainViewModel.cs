@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -11,11 +11,11 @@ using System.Windows.Input;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Win32;
-using NolirRpgmTranslator.Models;
-using NolirRpgmTranslator.Services;
+using Nelir.Models;
+using Nelir.Services;
 using System.Text.RegularExpressions;
 
-namespace NolirRpgmTranslator.ViewModels
+namespace Nelir.ViewModels
 {
     public partial class MainViewModel : ViewModelBase
     {
@@ -449,3 +449,4 @@ namespace NolirRpgmTranslator.ViewModels
         }
     }
 }
+

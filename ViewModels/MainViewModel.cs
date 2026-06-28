@@ -36,6 +36,26 @@ namespace Nelir.ViewModels
         private bool _isDarkMode;
 
         [ObservableProperty]
+        private bool _wordWrap = true;
+
+        [ObservableProperty]
+        private double _dataGridFontSize = 13;
+
+        [ObservableProperty]
+        private bool _showSpeakerColumn = true;
+
+        [ObservableProperty]
+        private bool _showMtlColumn = true;
+
+        [ObservableProperty]
+        private int _autoSaveInterval = 30;
+
+        [ObservableProperty]
+        private TranslationRow? _selectedRow;
+
+        public event Action<TranslationRow>? ScrollToRowRequested;
+
+        [ObservableProperty]
         private GlossaryService _glossary;
 
         [ObservableProperty]
@@ -106,6 +126,12 @@ namespace Nelir.ViewModels
             var settings = _settingsService.CurrentSettings;
             _isDarkMode = settings.IsDarkMode;
             _themeService.ApplyTheme(_isDarkMode);
+
+            _wordWrap = settings.WordWrap;
+            _dataGridFontSize = settings.DataGridFontSize;
+            _showSpeakerColumn = settings.ShowSpeakerColumn;
+            _showMtlColumn = settings.ShowMtlColumn;
+            _autoSaveInterval = settings.AutoSaveIntervalSeconds;
 
             // Setup collection view for filtering and sorting
             RowsView = CollectionViewSource.GetDefaultView(_project.AllRows);
@@ -432,10 +458,17 @@ namespace Nelir.ViewModels
             IsProjectLoaded = true;
 
             // Initialize AutoSave
-            _autoSaveService = new AutoSaveService(Project, _exportService);
-            _autoSaveService.AutoSaveCompleted += AutoSaveService_AutoSaveCompleted;
-            _autoSaveService.Start();
-            AutoSaveStatus = "Auto-save Active (Every 30s)";
+            if (AutoSaveInterval > 0)
+            {
+                _autoSaveService = new AutoSaveService(Project, _exportService, AutoSaveInterval);
+                _autoSaveService.AutoSaveCompleted += AutoSaveService_AutoSaveCompleted;
+                _autoSaveService.Start();
+                AutoSaveStatus = $"Auto-save Active (Every {AutoSaveInterval}s)";
+            }
+            else
+            {
+                AutoSaveStatus = "Auto-save Disabled";
+            }
 
             UpdateStats();
         }
@@ -665,7 +698,7 @@ namespace Nelir.ViewModels
         [RelayCommand]
         public void ApplyMtlAsTranslation(TranslationRow? row)
         {
-            if (row != null && !string.IsNullOrEmpty(row.MtlText))
+            if (row != null && !string.IsNullOrEmpty(row.MtlText) && string.IsNullOrEmpty(row.TranslationText))
             {
                 row.TranslationText = row.MtlText;
             }
@@ -686,6 +719,115 @@ namespace Nelir.ViewModels
             _autoSaveService?.TriggerAutoSave();
             _autoSaveService?.Stop();
             _settingsService.SaveSettings();
+        }
+
+        [RelayCommand]
+        private void JumpToNextUntranslated()
+        {
+            var allVisibleRows = RowsView.Cast<TranslationRow>().ToList();
+            if (!allVisibleRows.Any()) return;
+
+            int currentIndex = SelectedRow != null ? allVisibleRows.IndexOf(SelectedRow) : -1;
+
+            // Tìm từ vị trí tiếp theo
+            var next = allVisibleRows
+                .Skip(currentIndex + 1)
+                .FirstOrDefault(r => r.Status == TranslationStatus.Empty);
+
+            // Wrap nếu không tìm thấy phía dưới
+            if (next == null)
+                next = allVisibleRows.FirstOrDefault(r => r.Status == TranslationStatus.Empty);
+
+            if (next != null)
+            {
+                SelectedRow = next;
+                ScrollToRowRequested?.Invoke(next);
+            }
+            else
+            {
+                AutoSaveStatus = "✓ Đã dịch hết tất cả các dòng!";
+                MessageBox.Show("✓ Đã dịch hết tất cả các dòng!", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+        }
+
+        [RelayCommand]
+        private void BulkApplyMtl()
+        {
+            IEnumerable<TranslationRow> targets = SelectedFile != null && !string.IsNullOrEmpty(SelectedFile.FilePath)
+                ? Project.AllRows.Where(r => r.SourceFile == SelectedFile.FileName)
+                : Project.AllRows;
+
+            var emptyRows = targets
+                .Where(r => r.RowType != RowType.SectionHeader
+                         && string.IsNullOrEmpty(r.TranslationText)
+                         && !string.IsNullOrEmpty(r.MtlText))
+                .ToList();
+
+            if (!emptyRows.Any())
+            {
+                MessageBox.Show("Không có dòng trống nào có bản dịch máy (MTL) để điền.", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            foreach (var row in emptyRows)
+                row.TranslationText = row.MtlText;
+
+            UpdateStats();
+            UpdateAllFileNodesStats();
+            MessageBox.Show($"Đã tự động điền {emptyRows.Count} dòng bằng bản dịch máy (MTL).", "Thành Công", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+
+        [RelayCommand]
+        private void OpenSettings()
+        {
+            var win = new SettingsWindow { DataContext = this, Owner = Application.Current.MainWindow };
+            win.ShowDialog();
+        }
+
+        partial void OnWordWrapChanged(bool value)
+        {
+            _settingsService.CurrentSettings.WordWrap = value;
+            _settingsService.SaveSettings();
+        }
+
+        partial void OnDataGridFontSizeChanged(double value)
+        {
+            _settingsService.CurrentSettings.DataGridFontSize = value;
+            _settingsService.SaveSettings();
+        }
+
+        partial void OnShowSpeakerColumnChanged(bool value)
+        {
+            _settingsService.CurrentSettings.ShowSpeakerColumn = value;
+            _settingsService.SaveSettings();
+        }
+
+        partial void OnShowMtlColumnChanged(bool value)
+        {
+            _settingsService.CurrentSettings.ShowMtlColumn = value;
+            _settingsService.SaveSettings();
+        }
+
+        partial void OnAutoSaveIntervalChanged(int value)
+        {
+            _settingsService.CurrentSettings.AutoSaveIntervalSeconds = value;
+            _settingsService.SaveSettings();
+
+            if (_autoSaveService != null)
+            {
+                _autoSaveService.Stop();
+                if (value > 0)
+                {
+                    _autoSaveService = new AutoSaveService(Project, _exportService, value);
+                    _autoSaveService.AutoSaveCompleted += AutoSaveService_AutoSaveCompleted;
+                    _autoSaveService.Start();
+                    AutoSaveStatus = $"Auto-save Active (Every {value}s)";
+                }
+                else
+                {
+                    AutoSaveStatus = "Auto-save Disabled";
+                }
+            }
         }
 
         partial void OnIsDarkModeChanged(bool value)

@@ -14,6 +14,10 @@ namespace Nelir.Services
         public double WindowHeight { get; set; } = 800;
         public bool WindowMaximized { get; set; } = false;
         public bool IsDarkMode { get; set; } = false;
+        public bool WordWrap { get; set; } = true;
+        public double DataGridFontSize { get; set; } = 13;
+        public bool ShowSpeakerColumn { get; set; } = true;
+        public bool ShowMtlColumn { get; set; } = true;
     }
 
     public class AppSettingsService

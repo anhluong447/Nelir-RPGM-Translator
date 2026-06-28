@@ -15,13 +15,13 @@ namespace Nelir.Services
 
         public event EventHandler<DateTime>? AutoSaveCompleted;
 
-        public AutoSaveService(ProjectState projectState, ExportService exportService)
+        public AutoSaveService(ProjectState projectState, ExportService exportService, int intervalSeconds = 30)
         {
             _projectState = projectState;
             _exportService = exportService;
 
             _timer = new DispatcherTimer();
-            _timer.Interval = TimeSpan.FromSeconds(30);
+            _timer.Interval = TimeSpan.FromSeconds(intervalSeconds > 0 ? intervalSeconds : 30);
             _timer.Tick += Timer_Tick;
         }
 

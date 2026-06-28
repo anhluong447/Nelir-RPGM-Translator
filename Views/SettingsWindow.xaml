@@ -1,0 +1,95 @@
+<Window x:Class="Nelir.Views.SettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:sys="clr-namespace:System;assembly=mscorlib"
+        mc:Ignorable="d"
+        Title="Cài đặt" Width="480" SizeToContent="Height"
+        WindowStartupLocation="CenterOwner" ResizeMode="NoResize"
+        Background="{DynamicResource BgSurface}"
+        Foreground="{DynamicResource TextPrimary}">
+    <StackPanel Margin="24">
+
+        <!-- Section: Giao diện -->
+        <TextBlock Text="Giao diện" Style="{StaticResource TextHeadingSm}" Margin="0,0,0,12"/>
+
+        <!-- Dark mode -->
+        <DockPanel Margin="0,0,0,12">
+            <TextBlock Text="Dark mode" Style="{StaticResource TextBody}" VerticalAlignment="Center"/>
+            <ToggleButton DockPanel.Dock="Right" IsChecked="{Binding IsDarkMode}"
+                          Style="{StaticResource ToggleSwitch}"/>
+        </DockPanel>
+
+        <!-- Font size -->
+        <DockPanel Margin="0,0,0,12">
+            <TextBlock Text="Cỡ chữ bảng dịch" Style="{StaticResource TextBody}" VerticalAlignment="Center"/>
+            <TextBlock DockPanel.Dock="Right" Text="{Binding DataGridFontSize, StringFormat='{}{0:F0}px'}"
+                       Style="{StaticResource TextLabel}" VerticalAlignment="Center" Margin="8,0"/>
+            <Slider DockPanel.Dock="Right" Minimum="10" Maximum="20" TickFrequency="1"
+                    IsSnapToTickEnabled="True" Value="{Binding DataGridFontSize}" Width="120"/>
+        </DockPanel>
+
+        <!-- Word wrap -->
+        <DockPanel Margin="0,0,0,12">
+            <TextBlock Text="Xuống dòng tự động" Style="{StaticResource TextBody}" VerticalAlignment="Center"/>
+            <ToggleButton DockPanel.Dock="Right" IsChecked="{Binding WordWrap}"
+                          Style="{StaticResource ToggleSwitch}"/>
+        </DockPanel>
+
+        <Separator Margin="0,8,0,16" Background="{DynamicResource BorderDefault}"/>
+
+        <!-- Section: Cột hiển thị -->
+        <TextBlock Text="Cột hiển thị" Style="{StaticResource TextHeadingSm}" Margin="0,0,0,12"/>
+
+        <DockPanel Margin="0,0,0,12">
+            <TextBlock Text="Hiện cột Nhân vật" Style="{StaticResource TextBody}" VerticalAlignment="Center"/>
+            <ToggleButton DockPanel.Dock="Right" IsChecked="{Binding ShowSpeakerColumn}"
+                          Style="{StaticResource ToggleSwitch}"/>
+        </DockPanel>
+
+        <DockPanel Margin="0,0,0,12">
+            <TextBlock Text="Hiện cột MTL" Style="{StaticResource TextBody}" VerticalAlignment="Center"/>
+            <ToggleButton DockPanel.Dock="Right" IsChecked="{Binding ShowMtlColumn}"
+                          Style="{StaticResource ToggleSwitch}"/>
+        </DockPanel>
+
+        <Separator Margin="0,8,0,16" Background="{DynamicResource BorderDefault}"/>
+
+        <!-- Section: Hệ thống -->
+        <TextBlock Text="Hệ thống" Style="{StaticResource TextHeadingSm}" Margin="0,0,0,12"/>
+
+        <DockPanel Margin="0,0,0,24">
+            <TextBlock Text="Tự động lưu mỗi" Style="{StaticResource TextBody}" VerticalAlignment="Center"/>
+            <ComboBox DockPanel.Dock="Right" SelectedValue="{Binding AutoSaveInterval}"
+                      SelectedValuePath="Tag" Width="120" Height="28">
+                <ComboBoxItem Content="15 giây">
+                    <ComboBoxItem.Tag>
+                        <sys:Int32>15</sys:Int32>
+                    </ComboBoxItem.Tag>
+                </ComboBoxItem>
+                <ComboBoxItem Content="30 giây">
+                    <ComboBoxItem.Tag>
+                        <sys:Int32>30</sys:Int32>
+                    </ComboBoxItem.Tag>
+                </ComboBoxItem>
+                <ComboBoxItem Content="60 giây">
+                    <ComboBoxItem.Tag>
+                        <sys:Int32>60</sys:Int32>
+                    </ComboBoxItem.Tag>
+                </ComboBoxItem>
+                <ComboBoxItem Content="Tắt">
+                    <ComboBoxItem.Tag>
+                        <sys:Int32>0</sys:Int32>
+                    </ComboBoxItem.Tag>
+                </ComboBoxItem>
+            </ComboBox>
+        </DockPanel>
+
+        <!-- Buttons -->
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+            <Button Content="Đóng" Style="{StaticResource ButtonPrimary}"
+                    Click="Close_Click" Padding="20,8" Height="34"/>
+        </StackPanel>
+    </StackPanel>
+</Window>

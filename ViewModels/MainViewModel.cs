@@ -390,13 +390,11 @@ namespace Nelir.ViewModels
             Project.DataFolderPath = folderPath;
             Glossary.Load(folderPath);
             Project.LoadedFiles = files;
-            Project.AllRows.Clear();
             Project.RowIndex.Clear();
 
             int translatableTotal = 0;
             foreach (var row in allRowsList)
             {
-                Project.AllRows.Add(row);
                 if (row.RowType != RowType.SectionHeader)
                 {
                     Project.RowIndex[row.UniqueKey] = row;
@@ -406,6 +404,9 @@ namespace Nelir.ViewModels
                     row.PropertyChanged += Row_PropertyChanged;
                 }
             }
+
+            // Batch add all parsed rows to AllRows to prevent massive UI thread binding refresh lag
+            Project.AllRows.ClearAndAddRange(allRowsList);
 
             // Populate File Tree
             FileTree.Clear();

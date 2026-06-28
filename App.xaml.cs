@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Windows;
@@ -92,6 +92,8 @@ namespace Nelir
                 Directory.CreateDirectory(outputFolder);
                 
                 var exporter = new ExportService();
+                
+                // 1. Test game replacement files
                 exporter.ExportToGameFiles(project, outputFolder);
                 
                 string exportedMapFile = Path.Combine(outputFolder, "Map001.json");
@@ -115,6 +117,34 @@ namespace Nelir
                     throw new Exception($"Re-parsed dialog text does not match translated text: {reParsedDialog.RawText}");
                 }
                 
+                // 2. Test flat JSON export
+                string flatFile = Path.Combine(outputFolder, "Map001_flat.json");
+                exporter.ExportFileFlatJson(project, "Map001.json", flatFile);
+                if (!File.Exists(flatFile))
+                {
+                    throw new FileNotFoundException("Flat JSON file was not created!");
+                }
+                string flatContent = File.ReadAllText(flatFile);
+                if (!flatContent.Contains("Hello world! I am Nolir.") || !flatContent.Contains("This game will be translated to Vietnamese."))
+                {
+                    throw new Exception("Flat JSON does not contain translated dialog lines");
+                }
+                Console.WriteLine("Flat JSON export verification passed.");
+
+                // 3. Test structured JSON export
+                string structuredFile = Path.Combine(outputFolder, "Map001_structured.json");
+                exporter.ExportFileStructured(project, "Map001.json", structuredFile);
+                if (!File.Exists(structuredFile))
+                {
+                    throw new FileNotFoundException("Structured JSON file was not created!");
+                }
+                string structuredContent = File.ReadAllText(structuredFile);
+                if (!structuredContent.Contains("Hello world! I am Nolir.") || !structuredContent.Contains("events") || !structuredContent.Contains("Mở đầu"))
+                {
+                    throw new Exception("Structured JSON does not contain translations or root schema elements");
+                }
+                Console.WriteLine("Structured JSON export verification passed.");
+
                 Console.WriteLine("DIAGNOSTICS PASSED SUCCESSFULLY!");
             }
             catch (Exception ex)

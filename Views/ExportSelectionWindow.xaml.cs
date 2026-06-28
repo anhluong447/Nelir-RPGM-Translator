@@ -152,11 +152,19 @@ namespace Nelir.Views
             {
                 Directory.CreateDirectory(exportPath);
                 int count = 0;
+                bool isStructured = StructuredExportRadio.IsChecked == true;
 
                 foreach (var item in selectedItems)
                 {
                     string fileOutPath = Path.Combine(exportPath, item.FileName);
-                    _exportService.ExportFileFlatJson(_vm.Project, item.FileName, fileOutPath);
+                    if (isStructured)
+                    {
+                        _exportService.ExportFileStructured(_vm.Project, item.FileName, fileOutPath);
+                    }
+                    else
+                    {
+                        _exportService.ExportFileFlatJson(_vm.Project, item.FileName, fileOutPath);
+                    }
                     count++;
                 }
 

@@ -5,91 +5,143 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:sys="clr-namespace:System;assembly=mscorlib"
         mc:Ignorable="d"
-        Title="Cài đặt" Width="480" SizeToContent="Height"
-        WindowStartupLocation="CenterOwner" ResizeMode="NoResize"
+        Title="Cài đặt" Width="520" Height="680"
+        WindowStartupLocation="CenterOwner" ResizeMode="CanResizeWithGrip"
         Background="{DynamicResource BgSurface}"
         Foreground="{DynamicResource TextPrimary}">
-    <StackPanel Margin="24">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
 
-        <!-- Section: Giao diện -->
-        <TextBlock Text="Giao diện" Style="{StaticResource TextHeadingSm}" Margin="0,0,0,12"/>
+        <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            <StackPanel Margin="24">
 
-        <!-- Dark mode -->
-        <DockPanel Margin="0,0,0,12">
-            <TextBlock Text="Dark mode" Style="{StaticResource TextBody}" VerticalAlignment="Center"/>
-            <ToggleButton DockPanel.Dock="Right" IsChecked="{Binding IsDarkMode}"
-                          Style="{StaticResource ToggleSwitch}"/>
-        </DockPanel>
+                <!-- Section: Giao diện -->
+                <TextBlock Text="Giao diện" Style="{StaticResource TextHeadingSm}" Margin="0,0,0,12"/>
 
-        <!-- Font size -->
-        <DockPanel Margin="0,0,0,12">
-            <TextBlock Text="Cỡ chữ bảng dịch" Style="{StaticResource TextBody}" VerticalAlignment="Center"/>
-            <TextBlock DockPanel.Dock="Right" Text="{Binding DataGridFontSize, StringFormat='{}{0:F0}px'}"
-                       Style="{StaticResource TextLabel}" VerticalAlignment="Center" Margin="8,0"/>
-            <Slider DockPanel.Dock="Right" Minimum="10" Maximum="20" TickFrequency="1"
-                    IsSnapToTickEnabled="True" Value="{Binding DataGridFontSize}" Width="120"/>
-        </DockPanel>
+                <!-- Dark mode -->
+                <DockPanel Margin="0,0,0,12">
+                    <TextBlock Text="Dark mode" Style="{StaticResource TextBody}" VerticalAlignment="Center"/>
+                    <ToggleButton DockPanel.Dock="Right" IsChecked="{Binding IsDarkMode}"
+                                  Style="{StaticResource ToggleSwitch}"/>
+                </DockPanel>
 
-        <!-- Word wrap -->
-        <DockPanel Margin="0,0,0,12">
-            <TextBlock Text="Xuống dòng tự động" Style="{StaticResource TextBody}" VerticalAlignment="Center"/>
-            <ToggleButton DockPanel.Dock="Right" IsChecked="{Binding WordWrap}"
-                          Style="{StaticResource ToggleSwitch}"/>
-        </DockPanel>
+                <!-- Font size -->
+                <DockPanel Margin="0,0,0,12">
+                    <TextBlock Text="Cỡ chữ bảng dịch" Style="{StaticResource TextBody}" VerticalAlignment="Center"/>
+                    <TextBlock DockPanel.Dock="Right" Text="{Binding DataGridFontSize, StringFormat='{}{0:F0}px'}"
+                               Style="{StaticResource TextLabel}" VerticalAlignment="Center" Margin="8,0"/>
+                    <Slider DockPanel.Dock="Right" Minimum="10" Maximum="20" TickFrequency="1"
+                            IsSnapToTickEnabled="True" Value="{Binding DataGridFontSize}" Width="120"/>
+                </DockPanel>
 
-        <Separator Margin="0,8,0,16" Background="{DynamicResource BorderDefault}"/>
+                <!-- Word wrap -->
+                <DockPanel Margin="0,0,0,12">
+                    <TextBlock Text="Xuống dòng tự động" Style="{StaticResource TextBody}" VerticalAlignment="Center"/>
+                    <ToggleButton DockPanel.Dock="Right" IsChecked="{Binding WordWrap}"
+                                  Style="{StaticResource ToggleSwitch}"/>
+                </DockPanel>
 
-        <!-- Section: Cột hiển thị -->
-        <TextBlock Text="Cột hiển thị" Style="{StaticResource TextHeadingSm}" Margin="0,0,0,12"/>
+                <Separator Margin="0,8,0,16" Background="{DynamicResource BorderDefault}"/>
 
-        <DockPanel Margin="0,0,0,12">
-            <TextBlock Text="Hiện cột Nhân vật" Style="{StaticResource TextBody}" VerticalAlignment="Center"/>
-            <ToggleButton DockPanel.Dock="Right" IsChecked="{Binding ShowSpeakerColumn}"
-                          Style="{StaticResource ToggleSwitch}"/>
-        </DockPanel>
+                <!-- Section: Cột hiển thị -->
+                <TextBlock Text="Cột hiển thị" Style="{StaticResource TextHeadingSm}" Margin="0,0,0,12"/>
 
-        <DockPanel Margin="0,0,0,12">
-            <TextBlock Text="Hiện cột MTL" Style="{StaticResource TextBody}" VerticalAlignment="Center"/>
-            <ToggleButton DockPanel.Dock="Right" IsChecked="{Binding ShowMtlColumn}"
-                          Style="{StaticResource ToggleSwitch}"/>
-        </DockPanel>
+                <DockPanel Margin="0,0,0,12">
+                    <TextBlock Text="Hiện cột Nhân vật" Style="{StaticResource TextBody}" VerticalAlignment="Center"/>
+                    <ToggleButton DockPanel.Dock="Right" IsChecked="{Binding ShowSpeakerColumn}"
+                                  Style="{StaticResource ToggleSwitch}"/>
+                </DockPanel>
 
-        <Separator Margin="0,8,0,16" Background="{DynamicResource BorderDefault}"/>
+                <DockPanel Margin="0,0,0,12">
+                    <TextBlock Text="Hiện cột MTL" Style="{StaticResource TextBody}" VerticalAlignment="Center"/>
+                    <ToggleButton DockPanel.Dock="Right" IsChecked="{Binding ShowMtlColumn}"
+                                  Style="{StaticResource ToggleSwitch}"/>
+                </DockPanel>
 
-        <!-- Section: Hệ thống -->
-        <TextBlock Text="Hệ thống" Style="{StaticResource TextHeadingSm}" Margin="0,0,0,12"/>
+                <Separator Margin="0,8,0,16" Background="{DynamicResource BorderDefault}"/>
 
-        <DockPanel Margin="0,0,0,24">
-            <TextBlock Text="Tự động lưu mỗi" Style="{StaticResource TextBody}" VerticalAlignment="Center"/>
-            <ComboBox DockPanel.Dock="Right" SelectedValue="{Binding AutoSaveInterval}"
-                      SelectedValuePath="Tag" Width="120" Height="28">
-                <ComboBoxItem Content="15 giây">
-                    <ComboBoxItem.Tag>
-                        <sys:Int32>15</sys:Int32>
-                    </ComboBoxItem.Tag>
-                </ComboBoxItem>
-                <ComboBoxItem Content="30 giây">
-                    <ComboBoxItem.Tag>
-                        <sys:Int32>30</sys:Int32>
-                    </ComboBoxItem.Tag>
-                </ComboBoxItem>
-                <ComboBoxItem Content="60 giây">
-                    <ComboBoxItem.Tag>
-                        <sys:Int32>60</sys:Int32>
-                    </ComboBoxItem.Tag>
-                </ComboBoxItem>
-                <ComboBoxItem Content="Tắt">
-                    <ComboBoxItem.Tag>
-                        <sys:Int32>0</sys:Int32>
-                    </ComboBoxItem.Tag>
-                </ComboBoxItem>
-            </ComboBox>
-        </DockPanel>
+                <!-- Section: Hệ thống -->
+                <TextBlock Text="Hệ thống" Style="{StaticResource TextHeadingSm}" Margin="0,0,0,12"/>
 
-        <!-- Buttons -->
-        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-            <Button Content="Đóng" Style="{StaticResource ButtonPrimary}"
-                    Click="Close_Click" Padding="20,8" Height="34"/>
-        </StackPanel>
-    </StackPanel>
+                <DockPanel Margin="0,0,0,24">
+                    <TextBlock Text="Tự động lưu mỗi" Style="{StaticResource TextBody}" VerticalAlignment="Center"/>
+                    <ComboBox DockPanel.Dock="Right" SelectedValue="{Binding AutoSaveInterval}"
+                              SelectedValuePath="Tag" Width="120" Height="28">
+                        <ComboBoxItem Content="15 giây">
+                            <ComboBoxItem.Tag>
+                                <sys:Int32>15</sys:Int32>
+                            </ComboBoxItem.Tag>
+                        </ComboBoxItem>
+                        <ComboBoxItem Content="30 giây">
+                            <ComboBoxItem.Tag>
+                                <sys:Int32>30</sys:Int32>
+                            </ComboBoxItem.Tag>
+                        </ComboBoxItem>
+                        <ComboBoxItem Content="60 giây">
+                            <ComboBoxItem.Tag>
+                                <sys:Int32>60</sys:Int32>
+                            </ComboBoxItem.Tag>
+                        </ComboBoxItem>
+                        <ComboBoxItem Content="Tắt">
+                            <ComboBoxItem.Tag>
+                                <sys:Int32>0</sys:Int32>
+                            </ComboBoxItem.Tag>
+                        </ComboBoxItem>
+                    </ComboBox>
+                </DockPanel>
+
+                <Separator Margin="0,8,0,16" Background="{DynamicResource BorderDefault}"/>
+
+                <!-- Section: Nhân vật (Bust Registry) -->
+                <TextBlock Text="Nhân vật (Bust Registry)" Style="{StaticResource TextHeadingSm}" Margin="0,0,0,8"/>
+                <TextBlock Text="Áp dụng tên hiển thị cho các mã sprite $bust khi phân tích script (Lưu tại character_registry.json)."
+                           Style="{StaticResource TextCaption}" Foreground="{DynamicResource TextTertiary}" TextWrapping="Wrap" Margin="0,0,0,10"/>
+
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    
+                    <DataGrid x:Name="RegistryGrid" Grid.Row="0"
+                              AutoGenerateColumns="False"
+                              CanUserAddRows="True"
+                              CanUserDeleteRows="True"
+                              Height="180"
+                              HeadersVisibility="Column"
+                              GridLinesVisibility="Horizontal"
+                              Background="{DynamicResource BgSunken}"
+                              BorderBrush="{DynamicResource BorderDefault}"
+                              BorderThickness="1"
+                              RowHeaderWidth="0">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Sprite ID (bust)" Binding="{Binding BustId}" Width="*"/>
+                            <DataGridTextColumn Header="Tên hiển thị" Binding="{Binding DisplayName}" Width="*"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+
+                    <Button Grid.Row="1" Content="Lưu Registry"
+                            Style="{StaticResource ButtonSecondary}"
+                            Click="SaveRegistry_Click"
+                            HorizontalAlignment="Right"
+                            Height="30"
+                            Padding="15,4"
+                            Margin="0,8,0,0"/>
+                </Grid>
+
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Footer Buttons -->
+        <Border Grid.Row="1" Background="{DynamicResource BgSurface}" 
+                BorderBrush="{DynamicResource BorderDefault}" BorderThickness="0,1,0,0" Padding="15">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Content="Đóng" Style="{StaticResource ButtonPrimary}"
+                        Click="Close_Click" Padding="20,8" Height="34"/>
+            </StackPanel>
+        </Border>
+    </Grid>
 </Window>

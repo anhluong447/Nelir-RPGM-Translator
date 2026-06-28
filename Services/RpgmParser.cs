@@ -10,6 +10,14 @@ namespace Nelir.Services
     public class RpgmParser
     {
         private static readonly Regex SpeakerRegex = new(@"\\nc<([^>]*)>(.*)", RegexOptions.Compiled | RegexOptions.Singleline);
+        private static readonly Regex BustLoadRegex = new(@"\$bust\((\d+)\)\.loadBitmap\([^,]+,\s*'([^'\[]+)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
+        private readonly CharacterRegistryService? _characterRegistry;
+
+        public RpgmParser(CharacterRegistryService? characterRegistry = null)
+        {
+            _characterRegistry = characterRegistry;
+        }
 
         public List<TranslationRow> ParseFile(string filePath)
         {
@@ -142,6 +150,8 @@ namespace Nelir.Services
         {
             int listLength = list.GetArrayLength();
             int i = 0;
+            var bustSlots = new Dictionary<int, string>();
+            string currentSpeaker = string.Empty;
 
             while (i < listLength)
             {
@@ -153,6 +163,36 @@ namespace Nelir.Services
                 }
 
                 int code = codeProp.GetInt32();
+
+                if (code == 355 || code == 655)
+                {
+                    // Script call — parse bust loadBitmap
+                    if (command.TryGetProperty("parameters", out var scriptParams) &&
+                        scriptParams.ValueKind == JsonValueKind.Array &&
+                        scriptParams.GetArrayLength() > 0)
+                    {
+                        var scriptText = scriptParams[0].GetString() ?? string.Empty;
+                        var bustMatch = BustLoadRegex.Match(scriptText);
+                        if (bustMatch.Success &&
+                            int.TryParse(bustMatch.Groups[1].Value, out int slot))
+                        {
+                            var bustId = bustMatch.Groups[2].Value.Trim();
+                            bustSlots[slot] = bustId;
+
+                            // Nếu registry có entry cho bustId này → update current speaker
+                            if (_characterRegistry != null)
+                            {
+                                var resolved = _characterRegistry.Resolve(bustId);
+                                // Chỉ update currentSpeaker nếu resolve ra được tên thật
+                                // (tức là registry có entry, không phải fallback về bustId)
+                                if (_characterRegistry.Registry.ContainsKey(bustId))
+                                    currentSpeaker = resolved;
+                            }
+                        }
+                    }
+                    i++;
+                    continue;
+                }
 
                 if (code == 101)
                 {
@@ -202,6 +242,13 @@ namespace Nelir.Services
 
                     if (dialogLines.Count > 0 || hasSpeakerTag)
                     {
+                        // Fallback: dùng bust-based speaker nếu \nc<> không có gì
+                        if (string.IsNullOrEmpty(speaker) && !string.IsNullOrEmpty(currentSpeaker))
+                        {
+                            speaker = currentSpeaker;
+                            hasSpeakerTag = true;
+                        }
+
                         rows.Add(new TranslationRow
                         {
                             RowIndex = globalIndex++,
@@ -234,6 +281,13 @@ namespace Nelir.Services
                             hasSpeakerTag = true;
                             speaker = match.Groups[1].Value;
                             line = match.Groups[2].Value.Trim();
+                        }
+
+                        // Fallback: dùng bust-based speaker nếu \nc<> không có gì
+                        if (string.IsNullOrEmpty(speaker) && !string.IsNullOrEmpty(currentSpeaker))
+                        {
+                            speaker = currentSpeaker;
+                            hasSpeakerTag = true;
                         }
 
                         rows.Add(new TranslationRow

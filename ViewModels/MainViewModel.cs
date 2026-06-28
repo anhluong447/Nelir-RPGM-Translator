@@ -26,8 +26,11 @@ namespace Nelir.ViewModels
         private readonly AppSettingsService _settingsService;
         private readonly UndoRedoService _undoRedoService;
         private readonly ThemeService _themeService;
+        private readonly CharacterRegistryService _characterRegistry;
         private AutoSaveService? _autoSaveService;
         private readonly System.Windows.Threading.DispatcherTimer _searchDebounceTimer;
+
+        public CharacterRegistryService CharacterRegistry => _characterRegistry;
 
         [ObservableProperty]
         private ProjectState _project;
@@ -109,7 +112,8 @@ namespace Nelir.ViewModels
 
         public MainViewModel()
         {
-            _parser = new RpgmParser();
+            _characterRegistry = new CharacterRegistryService();
+            _parser = new RpgmParser(_characterRegistry);
             _mtlImporter = new MtlImporter();
             _exportService = new ExportService();
             _settingsService = new AppSettingsService();
@@ -262,6 +266,7 @@ namespace Nelir.ViewModels
                             
                             // Re-load glossary from the new path
                             Glossary.Load(dialog.FolderName);
+                            _characterRegistry.Load(dialog.FolderName);
 
                             // Re-init auto save with new path
                             _autoSaveService?.Stop();
@@ -326,6 +331,7 @@ namespace Nelir.ViewModels
 
         private async Task LoadFolderInternalAsync(string folderPath, List<string>? fileLimit = null)
         {
+            _characterRegistry.Load(folderPath);
             TranslationRow.UndoService = null;
             IsBusy = true;
             BusyStatus = "Đang đọc các tệp tin game (RAW)...";
@@ -720,6 +726,15 @@ namespace Nelir.ViewModels
             _autoSaveService?.Stop();
             _settingsService.SaveSettings();
         }
+
+        public void SaveColumnWidths(double[] widths)
+        {
+            _settingsService.CurrentSettings.ColumnWidths = widths;
+            _settingsService.SaveSettings();
+        }
+
+        public double[]? GetColumnWidths()
+            => _settingsService.CurrentSettings.ColumnWidths;
 
         [RelayCommand]
         private void JumpToNextUntranslated()

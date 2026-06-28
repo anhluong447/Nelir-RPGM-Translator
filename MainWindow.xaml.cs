@@ -3,9 +3,13 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Linq;
+using System.Windows.Controls.Primitives;
+using System.Collections.Specialized;
 using Nelir.Models;
 using Nelir.ViewModels;
 using Nelir.Views;
+using Nelir.Helpers;
 
 namespace Nelir
 {
@@ -21,6 +25,25 @@ namespace Nelir
             DataContext = vm;
             vm.ScrollToRowRequested += Vm_ScrollToRowRequested;
             MainGrid.PreviewKeyDown += MainGrid_PreviewKeyDown;
+
+            MainGrid.Loaded += (s, e) =>
+            {
+                if (DataContext is MainViewModel vmModel)
+                {
+                    var widths = vmModel.GetColumnWidths();
+                    if (widths != null && widths.Length == MainGrid.Columns.Count)
+                    {
+                        for (int i = 0; i < MainGrid.Columns.Count; i++)
+                        {
+                            if (widths[i] > 0)
+                                MainGrid.Columns[i].Width = new DataGridLength(widths[i]);
+                        }
+                    }
+                }
+                AttachColumnHeaderDoubleClick();
+            };
+
+            MainGrid.Columns.CollectionChanged += (s, e) => AttachColumnHeaderDoubleClick();
         }
 
         private void Vm_ScrollToRowRequested(TranslationRow row)
@@ -260,7 +283,55 @@ namespace Nelir
         {
             if (DataContext is MainViewModel vm)
             {
+                var currentWidths = vm.GetColumnWidths();
+                var widths = new double[MainGrid.Columns.Count];
+                for (int i = 0; i < MainGrid.Columns.Count; i++)
+                {
+                    var col = MainGrid.Columns[i];
+                    if (col.Visibility == Visibility.Visible)
+                    {
+                        widths[i] = col.ActualWidth;
+                    }
+                    else
+                    {
+                        if (currentWidths != null && i < currentWidths.Length && currentWidths[i] > 0)
+                        {
+                            widths[i] = currentWidths[i];
+                        }
+                        else
+                        {
+                            widths[i] = col.Width.IsAbsolute ? col.Width.Value : 100;
+                        }
+                    }
+                }
+                vm.SaveColumnWidths(widths);
                 vm.SaveSettingsAndCleanup();
+            }
+        }
+
+        private void AttachColumnHeaderDoubleClick()
+        {
+            Dispatcher.InvokeAsync(() =>
+            {
+                var headersPresenter = MainGrid.FindVisualChild<DataGridColumnHeadersPresenter>();
+                if (headersPresenter == null) return;
+
+                foreach (var header in headersPresenter.FindVisualChildren<DataGridColumnHeader>())
+                {
+                    header.MouseDoubleClick -= ColumnHeader_MouseDoubleClick;
+                    header.MouseDoubleClick += ColumnHeader_MouseDoubleClick;
+                }
+            }, System.Windows.Threading.DispatcherPriority.Loaded);
+        }
+
+        private void ColumnHeader_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            if (sender is DataGridColumnHeader header && header.Column != null)
+            {
+                header.Column.Width = DataGridLength.Auto;
+                MainGrid.UpdateLayout();
+                header.Column.Width = new DataGridLength(header.Column.ActualWidth);
+                e.Handled = true;
             }
         }
     }

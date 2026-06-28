@@ -8,7 +8,7 @@ namespace Nelir.Services
     {
         public string LastDataFolder { get; set; } = string.Empty;
         public string LastMtlFile { get; set; } = string.Empty;
-        public double[] ColumnWidths { get; set; } = [400, 300, 400];
+        public double[] ColumnWidths { get; set; } = [48, 120, 400, 250, 50, 400];
         public int AutoSaveIntervalSeconds { get; set; } = 30;
         public double WindowWidth { get; set; } = 1400;
         public double WindowHeight { get; set; } = 800;

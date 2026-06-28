@@ -532,64 +532,74 @@ namespace Nelir.ViewModels
         {
             if (!IsProjectLoaded) return;
 
+            var dialog = new OpenFolderDialog
+            {
+                Title = "Select MTL Translation Folder"
+            };
+
+            if (dialog.ShowDialog(Application.Current.MainWindow) == true)
+            {
+                await ImportMtlInternalAsync(dialog.FolderName, showSuccessMessage: true);
+            }
+        }
+
+        private async Task ImportMtlInternalAsync(string mtlFolder, bool showSuccessMessage = true)
+        {
+            if (!IsProjectLoaded) return;
+
             TranslationRow.UndoService = null;
             try
             {
-                var dialog = new OpenFolderDialog
+                IsBusy = true;
+                BusyStatus = "Đang gộp dữ liệu bản dịch máy (MTL)...";
+                BusyProgress = 0;
+                BusyDetail = "Đang phân tích thư mục...";
+                BusyPerformanceText = string.Empty;
+
+                int merged = 0;
+
+                await Task.Run(() =>
                 {
-                    Title = "Select MTL Translation Folder"
-                };
+                    var files = Directory.GetFiles(mtlFolder, "*.json");
+                    int totalFiles = files.Length;
+                    int filesProcessed = 0;
+                    var stopwatch = System.Diagnostics.Stopwatch.StartNew();
 
-                if (dialog.ShowDialog(Application.Current.MainWindow) == true)
-                {
-                    IsBusy = true;
-                    BusyStatus = "Đang gộp dữ liệu bản dịch máy (MTL)...";
-                    BusyProgress = 0;
-                    BusyDetail = "Đang phân tích thư mục...";
-                    BusyPerformanceText = string.Empty;
-
-                    string mtlFolder = dialog.FolderName;
-                    int merged = 0;
-
-                    await Task.Run(() =>
+                    foreach (var file in files)
                     {
-                        var files = Directory.GetFiles(mtlFolder, "*.json");
-                        int totalFiles = files.Length;
-                        int filesProcessed = 0;
-                        var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+                        string fileName = Path.GetFileName(file);
+                        long fileSizeKB = new FileInfo(file).Length / 1024;
 
-                        foreach (var file in files)
+                        App.Current.Dispatcher.Invoke(() =>
                         {
-                            string fileName = Path.GetFileName(file);
-                            long fileSizeKB = new FileInfo(file).Length / 1024;
+                            BusyDetail = $"{fileName} ({fileSizeKB:N0} KB)";
+                            BusyProgress = (double)filesProcessed / totalFiles * 100;
+                        });
 
-                            App.Current.Dispatcher.Invoke(() =>
-                            {
-                                BusyDetail = $"{fileName} ({fileSizeKB:N0} KB)";
-                                BusyProgress = (double)filesProcessed / totalFiles * 100;
-                            });
+                        int fileMerged = _mtlImporter.ImportSingleMtlFile(file, Project);
+                        merged += fileMerged;
+                        filesProcessed++;
 
-                            int fileMerged = _mtlImporter.ImportSingleMtlFile(file, Project);
-                            merged += fileMerged;
-                            filesProcessed++;
+                        double elapsedSec = stopwatch.Elapsed.TotalSeconds;
+                        double speed = elapsedSec > 0 ? (filesProcessed / elapsedSec) : 0;
 
-                            double elapsedSec = stopwatch.Elapsed.TotalSeconds;
-                            double speed = elapsedSec > 0 ? (filesProcessed / elapsedSec) : 0;
+                        App.Current.Dispatcher.Invoke(() =>
+                        {
+                            BusyPerformanceText = $"Thời gian: {elapsedSec:F2}s | Tệp đã xử lý: {filesProcessed}/{totalFiles} | Tốc độ: {speed:F1} tệp/giây";
+                        });
+                    }
+                });
 
-                            App.Current.Dispatcher.Invoke(() =>
-                            {
-                                BusyPerformanceText = $"Thời gian: {elapsedSec:F2}s | Tệp đã xử lý: {filesProcessed}/{totalFiles} | Tốc độ: {speed:F1} tệp/giây";
-                            });
-                        }
-                    });
+                Project.MtlFolderPath = mtlFolder;
+                _settingsService.CurrentSettings.LastMtlFile = mtlFolder;
+                _settingsService.SaveSettings();
 
+                if (showSuccessMessage)
+                {
                     MessageBox.Show($"Successfully merged {merged} translation lines from MTL folder.", "Import Finished", MessageBoxButton.OK, MessageBoxImage.Information);
-                    UpdateStats();
-                    UpdateAllFileNodesStats();
-                    
-                    _settingsService.CurrentSettings.LastMtlFile = dialog.FolderName;
-                    _settingsService.SaveSettings();
                 }
+                UpdateStats();
+                UpdateAllFileNodesStats();
             }
             catch (Exception ex)
             {
@@ -765,6 +775,7 @@ namespace Nelir.ViewModels
                 var saveData = new ProjectSaveData
                 {
                     DataFolderPath = Project.DataFolderPath,
+                    MtlFolderPath = Project.MtlFolderPath,
                     LoadedFiles = Project.LoadedFiles,
                     Translations = dict
                 };
@@ -851,6 +862,20 @@ namespace Nelir.ViewModels
 
                 // Call the folder loading logic to parse the game files
                 await LoadFolderInternalAsync(rawFolder, saveData.LoadedFiles);
+
+                // Auto-import MTL folder if specified
+                if (!string.IsNullOrEmpty(saveData.MtlFolderPath))
+                {
+                    if (Directory.Exists(saveData.MtlFolderPath))
+                    {
+                        await ImportMtlInternalAsync(saveData.MtlFolderPath, showSuccessMessage: false);
+                    }
+                    else
+                    {
+                        Project.MtlFolderPath = saveData.MtlFolderPath; // Preserve path in model
+                        MessageBox.Show($"Không tìm thấy thư mục MTL tại: {saveData.MtlFolderPath}. Bạn có thể tự import lại thư mục MTL bằng nút 'Thư mục MTL' sau.", "Không Tìm Thấy MTL", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    }
+                }
 
                 // Overlay translations
                 TranslationRow.UndoService = null; // Disable undo-redo recording during overlay

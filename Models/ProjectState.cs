@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
 namespace Nelir.Models
@@ -6,6 +6,7 @@ namespace Nelir.Models
     public class ProjectState
     {
         public string DataFolderPath { get; set; } = string.Empty;
+        public string MtlFolderPath { get; set; } = string.Empty;
         public List<string> LoadedFiles { get; set; } = [];
         public ObservableCollection<TranslationRow> AllRows { get; set; } = [];
         

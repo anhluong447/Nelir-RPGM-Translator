@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
@@ -159,6 +159,7 @@ namespace Nelir.Services
                     // Dialog header (Show Message)
                     var dialogLines = new List<string>();
                     string speaker = string.Empty;
+                    bool hasSpeakerTag = false;
                     int commandIndex = i;
                     i++;
 
@@ -178,10 +179,18 @@ namespace Nelir.Services
                                 var match = SpeakerRegex.Match(line);
                                 if (match.Success)
                                 {
+                                    hasSpeakerTag = true;
                                     speaker = match.Groups[1].Value;
                                     line = match.Groups[2].Value.Trim();
+                                    if (!string.IsNullOrEmpty(line))
+                                    {
+                                        dialogLines.Add(line);
+                                    }
                                 }
-                                dialogLines.Add(line);
+                                else
+                                {
+                                    dialogLines.Add(line);
+                                }
                             }
                             i++;
                         }
@@ -191,7 +200,7 @@ namespace Nelir.Services
                         }
                     }
 
-                    if (dialogLines.Count > 0)
+                    if (dialogLines.Count > 0 || hasSpeakerTag)
                     {
                         rows.Add(new TranslationRow
                         {
@@ -204,6 +213,7 @@ namespace Nelir.Services
                             CommandIndex = commandIndex,
                             SubIndex = 0,
                             Speaker = speaker,
+                            HasSpeakerTag = hasSpeakerTag,
                             RawText = string.Join("\n", dialogLines)
                         });
                     }
@@ -217,9 +227,11 @@ namespace Nelir.Services
                     {
                         string line = commandParams[0].GetString() ?? string.Empty;
                         string speaker = string.Empty;
+                        bool hasSpeakerTag = false;
                         var match = SpeakerRegex.Match(line);
                         if (match.Success)
                         {
+                            hasSpeakerTag = true;
                             speaker = match.Groups[1].Value;
                             line = match.Groups[2].Value.Trim();
                         }
@@ -235,6 +247,7 @@ namespace Nelir.Services
                             CommandIndex = i,
                             SubIndex = 0,
                             Speaker = speaker,
+                            HasSpeakerTag = hasSpeakerTag,
                             RawText = line
                         });
                     }

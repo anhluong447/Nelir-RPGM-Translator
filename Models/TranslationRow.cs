@@ -30,6 +30,7 @@ namespace Nelir.Models
 
         public string RawText { get; set; } = string.Empty;
         public string Speaker { get; set; } = string.Empty;
+        public bool HasSpeakerTag { get; set; }
 
         [ObservableProperty]
         private string _mtlText = string.Empty;

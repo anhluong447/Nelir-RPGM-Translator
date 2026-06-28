@@ -15,6 +15,7 @@
         Closing="Window_Closing">
 
     <Window.Resources>
+        <converters:BindingProxy x:Key="DataContextProxy" Data="{Binding}"/>
         <converters:RowTypeColorConverter x:Key="RowTypeColorConverter"/>
         <converters:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>
         <converters:InverseBoolConverter x:Key="InverseBoolConverter"/>
@@ -59,28 +60,35 @@
                 </Grid.ColumnDefinitions>
 
                 <StackPanel Grid.Column="0" Orientation="Horizontal">
-                    <Button Content="📁 Thư mục RAW (Đọc)" Style="{StaticResource ButtonPrimary}"
-                            Command="{Binding SelectFolderCommand}" Margin="0,0,10,0"/>
-                    <Button Content="📂 Mở dự án (.nel)" Style="{StaticResource ButtonSecondary}"
-                            Command="{Binding OpenProjectCommand}" Margin="0,0,10,0"/>
-                    <Button Content="💾 Lưu dự án (.nel)" Style="{StaticResource ButtonSecondary}"
-                            Command="{Binding SaveProjectCommand}" IsEnabled="{Binding IsProjectLoaded}" Margin="0,0,10,0"/>
-                    <Button Content="📥 Thư mục MTL (Đọc)" Style="{StaticResource ButtonSecondary}"
-                            Command="{Binding ImportMtlCommand}" IsEnabled="{Binding IsProjectLoaded}" Margin="0,0,10,0"/>
-                    <Button Content="💾 Xuất bản dịch" Style="{StaticResource ButtonSecondary}"
-                            Command="{Binding ExportFlatCommand}" IsEnabled="{Binding IsProjectLoaded}" Margin="0,0,10,0"/>
-                    <Button Content="🔍 Tìm &amp; Thay thế" Style="{StaticResource ButtonSecondary}"
-                            Click="FindReplaceButton_Click" IsEnabled="{Binding IsProjectLoaded}" Margin="0,0,10,0"/>
-                    <Button Content="📚 Thuật ngữ (Glossary)" Style="{StaticResource ButtonSecondary}"
-                            Command="{Binding OpenGlossaryCommand}" IsEnabled="{Binding IsProjectLoaded}"/>
-                    <Button Content="⚡ MTL → Tất cả trống" Style="{StaticResource ButtonSecondary}"
-                            Command="{Binding BulkApplyMtlCommand}" IsEnabled="{Binding IsProjectLoaded}"
-                            ToolTip="Copy MTL vào tất cả dòng chưa dịch trong file đang chọn (không ghi đè dòng đã có bản dịch)" Margin="10,0,0,0"/>
+                    <Button Content="📁 Dự án ▾" Style="{StaticResource ButtonPrimary}" Click="FileMenuButton_Click" Margin="0,0,10,0">
+                        <Button.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Header="📁 Chọn thư mục RAW (Đọc)" Command="{Binding SelectFolderCommand}"/>
+                                <MenuItem Header="📂 Mở dự án (.nel)" Command="{Binding OpenProjectCommand}"/>
+                                <MenuItem Header="💾 Lưu dự án (.nel)" Command="{Binding SaveProjectCommand}" IsEnabled="{Binding IsProjectLoaded}"/>
+                                <Separator/>
+                                <MenuItem Header="💾 Xuất bản dịch" Command="{Binding ExportFlatCommand}" IsEnabled="{Binding IsProjectLoaded}"/>
+                            </ContextMenu>
+                        </Button.ContextMenu>
+                    </Button>
+
+                    <Button Content="🛠️ Công cụ ▾" Style="{StaticResource ButtonSecondary}" Click="ToolsMenuButton_Click" Margin="0,0,10,0">
+                        <Button.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Header="🔍 Tìm &amp; Thay thế" Click="FindReplaceButton_Click" IsEnabled="{Binding IsProjectLoaded}"/>
+                                <MenuItem Header="📚 Thuật ngữ (Glossary)" Command="{Binding OpenGlossaryCommand}" IsEnabled="{Binding IsProjectLoaded}"/>
+                                <Separator/>
+                                <MenuItem Header="📥 Nhập thư mục MTL (Đọc)" Command="{Binding ImportMtlCommand}" IsEnabled="{Binding IsProjectLoaded}"/>
+                                <MenuItem Header="⚡ MTL → Tất cả dòng trống" Command="{Binding BulkApplyMtlCommand}" IsEnabled="{Binding IsProjectLoaded}"
+                                          ToolTip="Copy MTL vào tất cả dòng chưa dịch trong file đang chọn (không ghi đè dòng đã có bản dịch)"/>
+                            </ContextMenu>
+                        </Button.ContextMenu>
+                    </Button>
                     
                     <!-- Search Box -->
                     <Border BorderBrush="{DynamicResource BorderDefault}" BorderThickness="1" 
                             CornerRadius="{StaticResource RadiusMd}" Background="{DynamicResource BgSunken}"
-                                 Width="260" Margin="15,0,0,0">
+                                 Width="260" Margin="5,0,0,0">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto"/>
@@ -108,15 +116,6 @@
                                   Style="{StaticResource ToggleButtonGhost}"
                                   ToolTip="Bật/tắt xuống dòng tự động"
                                   Height="36" Margin="0,0,8,0" Padding="8,4"/>
-
-                    <Button Command="{Binding ToggleThemeCommand}"
-                            Content="{Binding IsDarkMode, Converter={StaticResource BoolToThemeIconConverter}}"
-                            Style="{StaticResource ButtonGhost}"
-                            ToolTip="Chuyển đổi Light / Dark mode"
-                            Width="36" Height="36"
-                            Padding="0"
-                            FontSize="16"
-                            HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
 
                     <Button Command="{Binding OpenSettingsCommand}"
                             Content="⚙️"
@@ -241,17 +240,19 @@
                                 <Style TargetType="TextBlock" BasedOn="{StaticResource TextMono}">
                                     <Setter Property="HorizontalAlignment" Value="Center"/>
                                     <Setter Property="Foreground" Value="{DynamicResource TextTertiary}"/>
+                                    <Setter Property="FontSize" Value="{Binding DataContext.DataGridFontSize, RelativeSource={RelativeSource AncestorType=DataGrid}}"/>
                                 </Style>
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
 
                         <!-- Speaker Column -->
                         <DataGridTextColumn Header="Nhân vật" Binding="{Binding Speaker}" Width="120" MinWidth="80" CanUserResize="True" IsReadOnly="True"
-                                            Visibility="{Binding DataContext.ShowSpeakerColumn, RelativeSource={RelativeSource AncestorType=DataGrid}, Converter={StaticResource InverseBoolConverter}}">
+                                            Visibility="{Binding Data.ShowSpeakerColumn, Source={StaticResource DataContextProxy}, Converter={StaticResource InverseBoolConverter}}">
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock" BasedOn="{StaticResource TextBody}">
                                     <Setter Property="Foreground" Value="{DynamicResource TextSecondary}"/>
                                     <Setter Property="TextWrapping" Value="{Binding DataContext.WordWrap, RelativeSource={RelativeSource AncestorType=DataGrid}, Converter={StaticResource BoolToTextWrappingConverter}}"/>
+                                    <Setter Property="FontSize" Value="{Binding DataContext.DataGridFontSize, RelativeSource={RelativeSource AncestorType=DataGrid}}"/>
                                 </Style>
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
@@ -260,14 +261,15 @@
                         <DataGridTemplateColumn Header="Nội dung gốc (RAW)" Width="2*" MinWidth="300" IsReadOnly="True">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <views:GlossaryTextBlock OriginalText="{Binding RawText}" Glossary="{Binding DataContext.Glossary.Lookup, RelativeSource={RelativeSource AncestorType=DataGrid}}" Style="{StaticResource TextBody}" TextWrapping="{Binding DataContext.WordWrap, RelativeSource={RelativeSource AncestorType=DataGrid}, Converter={StaticResource BoolToTextWrappingConverter}}"/>
+                                    <views:GlossaryTextBlock OriginalText="{Binding RawText}" Glossary="{Binding DataContext.Glossary.Lookup, RelativeSource={RelativeSource AncestorType=DataGrid}}" Style="{StaticResource TextBody}" TextWrapping="{Binding DataContext.WordWrap, RelativeSource={RelativeSource AncestorType=DataGrid}, Converter={StaticResource BoolToTextWrappingConverter}}"
+                                                             FontSize="{Binding DataContext.DataGridFontSize, RelativeSource={RelativeSource AncestorType=DataGrid}}"/>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
 
                         <!-- MTL Reference Column -->
                         <DataGridTemplateColumn Header="Bản dịch máy (MTL)" Width="1.5*" MinWidth="250" IsReadOnly="True"
-                                                Visibility="{Binding DataContext.ShowMtlColumn, RelativeSource={RelativeSource AncestorType=DataGrid}, Converter={StaticResource InverseBoolConverter}}">
+                                                Visibility="{Binding Data.ShowMtlColumn, Source={StaticResource DataContextProxy}, Converter={StaticResource InverseBoolConverter}}">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <Grid>
@@ -275,7 +277,8 @@
                                             <ColumnDefinition Width="*"/>
                                             <ColumnDefinition Width="Auto"/>
                                         </Grid.ColumnDefinitions>
-                                        <TextBlock Text="{Binding MtlText}" Style="{DynamicResource TextBodySecondary}" TextWrapping="{Binding DataContext.WordWrap, RelativeSource={RelativeSource AncestorType=DataGrid}, Converter={StaticResource BoolToTextWrappingConverter}}"/>
+                                        <TextBlock Text="{Binding MtlText}" Style="{DynamicResource TextBodySecondary}" TextWrapping="{Binding DataContext.WordWrap, RelativeSource={RelativeSource AncestorType=DataGrid}, Converter={StaticResource BoolToTextWrappingConverter}}"
+                                                   FontSize="{Binding DataContext.DataGridFontSize, RelativeSource={RelativeSource AncestorType=DataGrid}}"/>
                                         <Button Grid.Column="1" Content="→" Style="{StaticResource ButtonSecondary}" Width="24" Height="24" Padding="0" Margin="4,0,0,0"
                                                 Command="{Binding DataContext.ApplyMtlAsTranslationCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}" CommandParameter="{Binding}"
                                                 Visibility="{Binding TranslationText, Converter={StaticResource NullOrEmptyToVisibilityConverter}}"
@@ -300,7 +303,7 @@
                                         Foreground="{Binding Status, Converter={StaticResource TranslationStatusBrushConverter}}"
                                         HorizontalAlignment="Center"
                                         VerticalAlignment="Center"
-                                        FontSize="{DynamicResource FontSizeBase}"
+                                        FontSize="{Binding DataContext.DataGridFontSize, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                         FontWeight="SemiBold"
                                         ToolTip="{Binding Status}"/>
                                 </DataTemplate>
@@ -311,7 +314,8 @@
                         <DataGridTemplateColumn Header="Bản dịch chính thức (TRANSLATED)" Width="2*" MinWidth="300">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <TextBlock Text="{Binding TranslationText}" Style="{StaticResource TextBody}" TextWrapping="{Binding DataContext.WordWrap, RelativeSource={RelativeSource AncestorType=DataGrid}, Converter={StaticResource BoolToTextWrappingConverter}}" MinHeight="16"/>
+                                    <TextBlock Text="{Binding TranslationText}" Style="{StaticResource TextBody}" TextWrapping="{Binding DataContext.WordWrap, RelativeSource={RelativeSource AncestorType=DataGrid}, Converter={StaticResource BoolToTextWrappingConverter}}" MinHeight="16"
+                                               FontSize="{Binding DataContext.DataGridFontSize, RelativeSource={RelativeSource AncestorType=DataGrid}}"/>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                             <DataGridTemplateColumn.CellEditingTemplate>
@@ -319,7 +323,8 @@
                                     <!-- Double click or Enter enters editing cell -->
                                     <TextBox Text="{Binding TranslationText, UpdateSourceTrigger=PropertyChanged}" 
                                              Style="{StaticResource InputMultiline}" TextWrapping="{Binding DataContext.WordWrap, RelativeSource={RelativeSource AncestorType=DataGrid}, Converter={StaticResource BoolToTextWrappingConverter}}"
-                                             AcceptsReturn="True" FocusManager.FocusedElement="{Binding RelativeSource={RelativeSource Self}}"/>
+                                             AcceptsReturn="True" FocusManager.FocusedElement="{Binding RelativeSource={RelativeSource Self}}"
+                                             FontSize="{Binding DataContext.DataGridFontSize, RelativeSource={RelativeSource AncestorType=DataGrid}}"/>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellEditingTemplate>
                         </DataGridTemplateColumn>

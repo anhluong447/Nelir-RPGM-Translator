@@ -185,7 +185,7 @@ namespace Nelir.Services
                             for (int lineIdx = 0; lineIdx < lines.Length; lineIdx++)
                             {
                                 string lineText = lines[lineIdx];
-                                if (lineIdx == 0 && !string.IsNullOrEmpty(row.Speaker))
+                                if (lineIdx == 0 && row.HasSpeakerTag)
                                 {
                                     lineText = $"\\nc<{row.Speaker}>{lineText}";
                                 }
@@ -379,7 +379,7 @@ namespace Nelir.Services
                     for (int lineIdx = 0; lineIdx < lines.Length; lineIdx++)
                     {
                         string lineText = lines[lineIdx];
-                        if (lineIdx == 0 && !string.IsNullOrEmpty(row.Speaker))
+                        if (lineIdx == 0 && row.HasSpeakerTag)
                         {
                             lineText = $"\\nc<{row.Speaker}>{lineText}";
                         }

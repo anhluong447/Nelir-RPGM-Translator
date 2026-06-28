@@ -241,7 +241,7 @@
                                 <Style TargetType="TextBlock" BasedOn="{StaticResource TextMono}">
                                     <Setter Property="HorizontalAlignment" Value="Center"/>
                                     <Setter Property="Foreground" Value="{DynamicResource TextTertiary}"/>
-                                    <Setter Property="FontSize" Value="{Binding DataContext.DataGridFontSize, RelativeSource={RelativeSource AncestorType=DataGrid}}"/>
+                                    <Setter Property="FontSize" Value="{Binding Data.DataGridFontSize, Source={StaticResource DataContextProxy}}"/>
                                 </Style>
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
@@ -252,8 +252,8 @@
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock" BasedOn="{StaticResource TextBody}">
                                     <Setter Property="Foreground" Value="{DynamicResource TextSecondary}"/>
-                                    <Setter Property="TextWrapping" Value="{Binding DataContext.WordWrap, RelativeSource={RelativeSource AncestorType=DataGrid}, Converter={StaticResource BoolToTextWrappingConverter}}"/>
-                                    <Setter Property="FontSize" Value="{Binding DataContext.DataGridFontSize, RelativeSource={RelativeSource AncestorType=DataGrid}}"/>
+                                    <Setter Property="TextWrapping" Value="{Binding Data.WordWrap, Source={StaticResource DataContextProxy}, Converter={StaticResource BoolToTextWrappingConverter}}"/>
+                                    <Setter Property="FontSize" Value="{Binding Data.DataGridFontSize, Source={StaticResource DataContextProxy}}"/>
                                 </Style>
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
@@ -262,8 +262,8 @@
                         <DataGridTemplateColumn Header="Nội dung gốc (RAW)" Width="2*" MinWidth="300" IsReadOnly="True">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <views:GlossaryTextBlock OriginalText="{Binding RawText}" Glossary="{Binding DataContext.Glossary.Lookup, RelativeSource={RelativeSource AncestorType=DataGrid}}" Style="{StaticResource TextBody}" TextWrapping="{Binding DataContext.WordWrap, RelativeSource={RelativeSource AncestorType=DataGrid}, Converter={StaticResource BoolToTextWrappingConverter}}"
-                                                             FontSize="{Binding DataContext.DataGridFontSize, RelativeSource={RelativeSource AncestorType=DataGrid}}"/>
+                                    <views:GlossaryTextBlock OriginalText="{Binding RawText}" Glossary="{Binding Data.Glossary.Lookup, Source={StaticResource DataContextProxy}}" Style="{StaticResource TextBody}" TextWrapping="{Binding Data.WordWrap, Source={StaticResource DataContextProxy}, Converter={StaticResource BoolToTextWrappingConverter}}"
+                                                             FontSize="{Binding Data.DataGridFontSize, Source={StaticResource DataContextProxy}}"/>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
@@ -278,10 +278,10 @@
                                             <ColumnDefinition Width="*"/>
                                             <ColumnDefinition Width="Auto"/>
                                         </Grid.ColumnDefinitions>
-                                        <TextBlock Text="{Binding MtlText}" Style="{DynamicResource TextBodySecondary}" TextWrapping="{Binding DataContext.WordWrap, RelativeSource={RelativeSource AncestorType=DataGrid}, Converter={StaticResource BoolToTextWrappingConverter}}"
-                                                   FontSize="{Binding DataContext.DataGridFontSize, RelativeSource={RelativeSource AncestorType=DataGrid}}"/>
+                                        <TextBlock Text="{Binding MtlText}" Style="{DynamicResource TextBodySecondary}" TextWrapping="{Binding Data.WordWrap, Source={StaticResource DataContextProxy}, Converter={StaticResource BoolToTextWrappingConverter}}"
+                                                   FontSize="{Binding Data.DataGridFontSize, Source={StaticResource DataContextProxy}}"/>
                                         <Button Grid.Column="1" Content="→" Style="{StaticResource ButtonSecondary}" Width="24" Height="24" Padding="0" Margin="4,0,0,0"
-                                                Command="{Binding DataContext.ApplyMtlAsTranslationCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}" CommandParameter="{Binding}"
+                                                Command="{Binding Data.ApplyMtlAsTranslationCommand, Source={StaticResource DataContextProxy}}" CommandParameter="{Binding}"
                                                 Visibility="{Binding TranslationText, Converter={StaticResource NullOrEmptyToVisibilityConverter}}"
                                                 ToolTip="Áp dụng MTL này làm bản dịch chính thức"/>
                                     </Grid>
@@ -304,7 +304,7 @@
                                         Foreground="{Binding Status, Converter={StaticResource TranslationStatusBrushConverter}}"
                                         HorizontalAlignment="Center"
                                         VerticalAlignment="Center"
-                                        FontSize="{Binding DataContext.DataGridFontSize, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                        FontSize="{Binding Data.DataGridFontSize, Source={StaticResource DataContextProxy}}"
                                         FontWeight="SemiBold"
                                         ToolTip="{Binding Status}"/>
                                 </DataTemplate>
@@ -315,17 +315,17 @@
                         <DataGridTemplateColumn Header="Bản dịch chính thức (TRANSLATED)" Width="2*" MinWidth="300">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <TextBlock Text="{Binding TranslationText}" Style="{StaticResource TextBody}" TextWrapping="{Binding DataContext.WordWrap, RelativeSource={RelativeSource AncestorType=DataGrid}, Converter={StaticResource BoolToTextWrappingConverter}}" MinHeight="16"
-                                               FontSize="{Binding DataContext.DataGridFontSize, RelativeSource={RelativeSource AncestorType=DataGrid}}"/>
+                                    <TextBlock Text="{Binding TranslationText}" Style="{StaticResource TextBody}" TextWrapping="{Binding Data.WordWrap, Source={StaticResource DataContextProxy}, Converter={StaticResource BoolToTextWrappingConverter}}" MinHeight="16"
+                                               FontSize="{Binding Data.DataGridFontSize, Source={StaticResource DataContextProxy}}"/>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                             <DataGridTemplateColumn.CellEditingTemplate>
                                 <DataTemplate>
                                     <!-- Double click or Enter enters editing cell -->
                                     <TextBox Text="{Binding TranslationText, UpdateSourceTrigger=PropertyChanged}" 
-                                             Style="{StaticResource InputMultiline}" TextWrapping="{Binding DataContext.WordWrap, RelativeSource={RelativeSource AncestorType=DataGrid}, Converter={StaticResource BoolToTextWrappingConverter}}"
+                                             Style="{StaticResource InputMultiline}" TextWrapping="{Binding Data.WordWrap, Source={StaticResource DataContextProxy}, Converter={StaticResource BoolToTextWrappingConverter}}"
                                              AcceptsReturn="True" FocusManager.FocusedElement="{Binding RelativeSource={RelativeSource Self}}"
-                                             FontSize="{Binding DataContext.DataGridFontSize, RelativeSource={RelativeSource AncestorType=DataGrid}}"/>
+                                             FontSize="{Binding Data.DataGridFontSize, Source={StaticResource DataContextProxy}}"/>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellEditingTemplate>
                         </DataGridTemplateColumn>

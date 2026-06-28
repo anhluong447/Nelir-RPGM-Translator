@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
@@ -9,8 +10,37 @@ using System.Windows.Media;
 
 namespace Nelir.Views
 {
+    internal class GlossaryCacheItem
+    {
+        public Regex? Regex { get; }
+
+        public GlossaryCacheItem(Dictionary<string, string> dict)
+        {
+            var keys = dict.Keys
+                .Where(k => !string.IsNullOrWhiteSpace(k))
+                .OrderByDescending(k => k.Length)
+                .Select(Regex.Escape)
+                .ToList();
+
+            if (keys.Count > 0)
+            {
+                string pattern = "(" + string.Join("|", keys) + ")";
+                try
+                {
+                    Regex = new Regex(pattern, RegexOptions.IgnoreCase | RegexOptions.Compiled);
+                }
+                catch
+                {
+                    Regex = null;
+                }
+            }
+        }
+    }
+
     public class GlossaryTextBlock : TextBlock
     {
+        private static readonly ConditionalWeakTable<Dictionary<string, string>, GlossaryCacheItem> RegexCache = new();
+
         public static readonly DependencyProperty OriginalTextProperty =
             DependencyProperty.Register(nameof(OriginalText), typeof(string), typeof(GlossaryTextBlock),
                 new PropertyMetadata(string.Empty, OnPropertiesChanged));
@@ -55,27 +85,9 @@ namespace Nelir.Views
                 return;
             }
 
-            // Order glossary keys by length descending to match longer multi-word phrases first
-            var keys = glossary.Keys
-                .Where(k => !string.IsNullOrWhiteSpace(k))
-                .OrderByDescending(k => k.Length)
-                .Select(Regex.Escape)
-                .ToList();
-
-            if (keys.Count == 0)
-            {
-                Inlines.Add(new Run(text));
-                return;
-            }
-
-            // Case-insensitive match for glossary terms
-            string pattern = "(" + string.Join("|", keys) + ")";
-            Regex regex;
-            try
-            {
-                regex = new Regex(pattern, RegexOptions.IgnoreCase);
-            }
-            catch
+            var cacheItem = RegexCache.GetValue(glossary, dict => new GlossaryCacheItem(dict));
+            var regex = cacheItem.Regex;
+            if (regex == null)
             {
                 Inlines.Add(new Run(text));
                 return;

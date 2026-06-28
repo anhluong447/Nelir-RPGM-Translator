@@ -19,21 +19,21 @@ A desktop tool built in **WPF (.NET 10.0)** to translate RPG Maker MZ/MV game da
   - Premium **Loading Overlay**: Displays when loading folders or importing MTL translations, reporting active file details (name and size), elapsed time, row throughput speed, and progress percentages to debug bottlenecks.
 * **Translation Status Badge (`TT` Column)**:
   - High-visibility status indicator next to translations: Empty (`○` in Gray), MTL-copied (`~` in Yellow/Warning), or manually Translated (`✓` in Green/Success).
-* **Keyboard-Driven Undo / Redo (Ctrl + Z / Ctrl + Y)**:
-  - Custom bounded double-stack tracking up to 200 operations deep on cell manual translation inputs.
-  - Automatically suspends tracking during bulk folder loads or machine translation imports to optimize performance.
-* **Sidebar Progress Tracking**:
-  - Displays completion progress ratios next to each file and the root folder in the tree view (e.g. `Map001.json (0/4)`).
-* **Find & Replace (Ctrl + F / Ctrl + H)**:
-  - Tabbed search dialog enabling real-time navigation, case-sensitive matching, and single/bulk replacements.
-  - Search box input is debounced by 300ms to eliminate UI lag.
-* **Interactive Glossary Support**:
-  - Automatically loads project-specific `glossary.json` files.
-  - Dynamically highlights terms in the RAW column in yellow with detailed hover tooltips showing official translations.
-  - Features a dedicated Glossary editor window to easily add, delete, and save definitions.
 * **Background Autosave & Restore**:
   - Automatically saves progress to `.nelir_autosave.json` in the raw folder every 30 seconds to prevent data loss.
   - Prompts to restore manual translations directly into the **Bản dịch chính thức (TRANSLATED)** column on startup.
+* **Manual Project Saving (.nel Format)**:
+  - Save progress manually into a lightweight `.nel` file format.
+  - The `.nel` file is optimized to store only path references and active translations (omitting raw data to save size).
+  - Automatically loads and resolves file structures on startup. If the original data folder is missing or moved, prompts the user to easily relocate/re-link it without losing translations.
+* **Keyboard-Driven Shortcuts & Undo/Redo**:
+  - `Ctrl + O`: Select and open RAW folder.
+  - `Ctrl + Shift + O`: Open `.nel` project workspace.
+  - `Ctrl + S`: Save project workspace `.nel` file.
+  - `Ctrl + Shift + S`: Save project workspace as another `.nel` file.
+  - `Ctrl + E`: Export translation game files.
+  - `Ctrl + Z` / `Ctrl + Y`: Undo / Redo manual translation inputs.
+  - Automatically suspends undo tracking during bulk folder loads or machine translation imports to optimize performance.
 
 ---
 

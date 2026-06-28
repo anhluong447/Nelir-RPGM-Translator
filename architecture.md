@@ -26,11 +26,12 @@ graph TD
 *   [ProjectState](file:///d:/Shits/Prj/Nelir-RPGM-Translator/Nelir/Models/ProjectState.cs): Acts as the in-memory database of the application, holding all loaded `TranslationRow`s and mapping keys.
 *   [ExportFileItem](file:///d:/Shits/Prj/Nelir-RPGM-Translator/Nelir/Models/ExportFileItem.cs): Represents a file entry in the selective export window.
 *   [GlossaryEntry](file:///d:/Shits/Prj/Nelir-RPGM-Translator/Nelir/Models/GlossaryEntry.cs): Represents a translation term pair (Original vs Translated term) with property notifications.
+*   [ProjectSaveData](file:///d:/Shits/Prj/Nelir-RPGM-Translator/Nelir/Models/ProjectSaveData.cs): Represents a lightweight saved workspace state containing the original RAW folder path, names of loaded files, and a dictionary of manual translations.
 
 ### 2. ViewModels (Logic & State Controllers)
 *   [MainViewModel](file:///d:/Shits/Prj/Nelir-RPGM-Translator/Nelir/ViewModels/MainViewModel.cs):
-    - Manages the application states (`IsProjectLoaded`, `IsBusy`, `BusyStatus`, `BusyDetail`, `BusyProgress`, `BusyPerformanceText`, `FileTree`, `SelectedFile`, `SearchQuery`, `Glossary`, `IsDarkMode`).
-    - Commands: `SelectFolderCommand` (Load RAW), `ImportMtlCommand` (Load MTL), `ExportFlatCommand` (Launch Selective Export), `OpenGlossaryCommand` (Manage Glossary), `UndoCommand` (Ctrl+Z manual translation rollback), `RedoCommand` (Ctrl+Y rollback forward).
+    - Manages the application states (`IsProjectLoaded`, `IsBusy`, `BusyStatus`, `BusyDetail`, `BusyProgress`, `BusyPerformanceText`, `FileTree`, `SelectedFile`, `SearchQuery`, `Glossary`, `IsDarkMode`, `CurrentProjectFilePath`, `WindowTitle`).
+    - Commands: `SelectFolderCommand` (Load RAW / Relocate project), `OpenProjectCommand` (Load `.nel` project), `SaveProjectCommand` (Save current `.nel` project), `SaveProjectAsCommand` (Save `.nel` project as...), `ImportMtlCommand` (Load MTL), `ExportFlatCommand` (Launch Selective Export), `OpenGlossaryCommand` (Manage Glossary), `UndoCommand` (Ctrl+Z manual translation rollback), `RedoCommand` (Ctrl+Y rollback forward).
     - Exposes `RowsView` (WPF `ICollectionView`) configured with a filter predicate (`FilterRows`), grouping descriptions (`SourceFile`), and sort descriptions (`SourceFile` ascending, `RowIndex` ascending).
 
 ### 3. Views (UI Layers)
@@ -134,5 +135,30 @@ sequenceDiagram
     GlossaryWindow->>GlossaryService: Save() & UpdateLookup()
     GlossaryService->>GlossaryTextBlock: Fires Lookup PropertyChanged
     Note over GlossaryTextBlock: Instantly redraws highlighted terms in Grid
+```
+
+### 5. Manual Project Save / Load Flow
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant MainVM
+    participant Disk
+
+    User->>MainVM: Press Ctrl + S (Save Project)
+    MainVM->>MainVM: Construct ProjectSaveData
+    Note over MainVM: Collects only non-empty translations to keep .nel file small
+    MainVM->>Disk: Write .nel JSON file
+
+    User->>MainVM: Press Ctrl + Shift + O (Open Project)
+    MainVM->>Disk: Read .nel JSON file
+    MainVM->>MainVM: Check if original DataFolderPath exists
+    alt Folder not found
+        MainVM->>User: Show warning & prompt to select RAW folder
+        User->>MainVM: Select new RAW folder
+    end
+    MainVM->>MainVM: Parse RAW files in folder
+    MainVM->>MainVM: Apply saved translations from .nel to Project.RowIndex
+    MainVM->>User: Ready to translate
 ```
 

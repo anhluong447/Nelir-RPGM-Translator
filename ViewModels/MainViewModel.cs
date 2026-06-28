@@ -65,6 +65,25 @@ namespace Nelir.ViewModels
         [ObservableProperty]
         private bool _isProjectLoaded;
 
+        [ObservableProperty]
+        private string? _currentProjectFilePath;
+
+        [ObservableProperty]
+        private string _windowTitle = "Nelir's RPGM Translator v1.0";
+
+        partial void OnCurrentProjectFilePathChanged(string? value)
+        {
+            if (string.IsNullOrEmpty(value))
+            {
+                WindowTitle = "Nelir's RPGM Translator v1.0";
+            }
+            else
+            {
+                string fileName = Path.GetFileName(value);
+                WindowTitle = $"Nelir's RPGM Translator - [{fileName}]";
+            }
+        }
+
         // Binds to the DataGrid
         public ICollectionView RowsView { get; }
 
@@ -201,6 +220,39 @@ namespace Nelir.ViewModels
 
                 if (result == true)
                 {
+                    if (IsProjectLoaded)
+                    {
+                        var relocateResult = MessageBox.Show(
+                            "Dự án đã được tải. Bạn có muốn đổi liên kết (relocate) đến thư mục dữ liệu mới để có thể xuất bản dịch không?\n\n- Chọn YES để đổi liên kết thư mục dữ liệu.\n- Chọn NO để tải mới một dự án khác (sẽ làm mất tiến trình chưa lưu của dự án hiện tại).",
+                            "Đổi liên kết dữ liệu",
+                            MessageBoxButton.YesNoCancel,
+                            MessageBoxImage.Question);
+
+                        if (relocateResult == MessageBoxResult.Yes)
+                        {
+                            Project.DataFolderPath = dialog.FolderName;
+                            _settingsService.CurrentSettings.LastDataFolder = dialog.FolderName;
+                            _settingsService.SaveSettings();
+                            
+                            // Re-load glossary from the new path
+                            Glossary.Load(dialog.FolderName);
+
+                            // Re-init auto save with new path
+                            _autoSaveService?.Stop();
+                            _autoSaveService = new AutoSaveService(Project, _exportService);
+                            _autoSaveService.AutoSaveCompleted += AutoSaveService_AutoSaveCompleted;
+                            _autoSaveService.Start();
+
+                            MessageBox.Show("Đã đổi liên kết thư mục dữ liệu thành công.", "Thành Công", MessageBoxButton.OK, MessageBoxImage.Information);
+                            return;
+                        }
+                        else if (relocateResult == MessageBoxResult.Cancel)
+                        {
+                            return;
+                        }
+                    }
+
+                    // For NO or when project not loaded, load fresh
                     await LoadFolderAsync(dialog.FolderName);
                 }
             }
@@ -212,141 +264,9 @@ namespace Nelir.ViewModels
 
         private async Task LoadFolderAsync(string folderPath)
         {
-            TranslationRow.UndoService = null;
-            IsBusy = true;
-            BusyStatus = "Đang đọc các tệp tin game (RAW)...";
-            BusyDetail = "Đang chuẩn bị danh sách tệp...";
-            BusyProgress = 0;
-            BusyPerformanceText = string.Empty;
-            ErrorMessage = null;
-            IsProjectLoaded = false;
-
-            // Stop existing autosave if active
-            _autoSaveService?.Stop();
-
-            // Clear undo history
-            _undoRedoService.Clear();
-
             try
             {
-                var files = Directory.GetFiles(folderPath, "*.json")
-                    .Select(Path.GetFileName)
-                    .Where(name => name != null && 
-                                   (Regex.IsMatch(name, @"^Map\d+\.json$", RegexOptions.IgnoreCase) || 
-                                    name.Equals("CommonEvents.json", StringComparison.OrdinalIgnoreCase)))
-                    .Select(name => name!)
-                    .OrderBy(name => name)
-                    .ToList();
-
-                if (files.Count == 0)
-                {
-                    ErrorMessage = "No RPGMaker Map*.json or CommonEvents.json files found in selected folder.";
-                    IsBusy = false;
-                    return;
-                }
-
-                var allRowsList = new List<TranslationRow>();
-                var treeNodes = new List<FileNode>();
-
-                // Parse on background thread to keep UI interactive
-                await Task.Run(() =>
-                {
-                    int totalFiles = files.Count;
-                    int filesProcessed = 0;
-                    int totalRowsParsed = 0;
-                    var stopwatch = System.Diagnostics.Stopwatch.StartNew();
-
-                    foreach (var file in files)
-                    {
-                        string fullPath = Path.Combine(folderPath, file);
-                        long fileSizeKB = new FileInfo(fullPath).Length / 1024;
-
-                        App.Current.Dispatcher.Invoke(() =>
-                        {
-                            BusyDetail = $"{file} ({fileSizeKB:N0} KB)";
-                            BusyProgress = (double)filesProcessed / totalFiles * 100;
-                        });
-
-                        var parsedRows = _parser.ParseFile(fullPath);
-                        if (parsedRows.Count > 0)
-                        {
-                            allRowsList.AddRange(parsedRows);
-
-                            // Calculate count of editable segments for stats in treeview
-                            int translatableCount = parsedRows.Count(r => r.RowType != RowType.SectionHeader);
-                            treeNodes.Add(new FileNode
-                            {
-                                FileName = file,
-                                FilePath = fullPath,
-                                IsLoaded = true,
-                                TotalRows = translatableCount,
-                                TranslatedRows = parsedRows.Count(r => r.RowType != RowType.SectionHeader && !string.IsNullOrEmpty(r.TranslationText))
-                            });
-                        }
-
-                        filesProcessed++;
-                        totalRowsParsed += parsedRows.Count;
-                        double elapsedSec = stopwatch.Elapsed.TotalSeconds;
-                        double speed = elapsedSec > 0 ? (totalRowsParsed / elapsedSec) : 0;
-
-                        App.Current.Dispatcher.Invoke(() =>
-                        {
-                            BusyPerformanceText = $"Thời gian: {elapsedSec:F2}s | Đã đọc: {totalRowsParsed:N0} dòng | Tốc độ: {speed:F0} dòng/giây";
-                        });
-                    }
-                });
-
-                // Clear and update project state
-                Project.DataFolderPath = folderPath;
-                Glossary.Load(folderPath);
-                Project.LoadedFiles = files;
-                Project.AllRows.Clear();
-                Project.RowIndex.Clear();
-
-                int translatableTotal = 0;
-                foreach (var row in allRowsList)
-                {
-                    Project.AllRows.Add(row);
-                    if (row.RowType != RowType.SectionHeader)
-                    {
-                        Project.RowIndex[row.UniqueKey] = row;
-                        translatableTotal++;
-                        
-                        // Subscribe to change triggers to update stats
-                        row.PropertyChanged += Row_PropertyChanged;
-                    }
-                }
-
-                // Populate File Tree
-                FileTree.Clear();
-                var rootNode = new FileNode
-                {
-                    FileName = "Data Folder",
-                    FilePath = string.Empty, // Empty represents All Files root
-                    TotalRows = translatableTotal,
-                    TranslatedRows = allRowsList.Count(r => r.RowType != RowType.SectionHeader && !string.IsNullOrEmpty(r.TranslationText))
-                };
-                foreach (var node in treeNodes)
-                {
-                    rootNode.Children.Add(node);
-                }
-                FileTree.Add(rootNode);
-
-                SelectedFile = rootNode;
-
-                // Update settings
-                _settingsService.CurrentSettings.LastDataFolder = folderPath;
-                _settingsService.SaveSettings();
-
-                IsProjectLoaded = true;
-
-                // Initialize AutoSave
-                _autoSaveService = new AutoSaveService(Project, _exportService);
-                _autoSaveService.AutoSaveCompleted += AutoSaveService_AutoSaveCompleted;
-                _autoSaveService.Start();
-                AutoSaveStatus = "Auto-save Active (Every 30s)";
-
-                UpdateStats();
+                await LoadFolderInternalAsync(folderPath);
 
                 // Check for existing autosave file to restore
                 string autosaveFile = Path.Combine(folderPath, ".nelir_autosave.json");
@@ -376,6 +296,147 @@ namespace Nelir.ViewModels
                 TranslationRow.UndoService = _undoRedoService;
                 IsBusy = false;
             }
+        }
+
+        private async Task LoadFolderInternalAsync(string folderPath, List<string>? fileLimit = null)
+        {
+            TranslationRow.UndoService = null;
+            IsBusy = true;
+            BusyStatus = "Đang đọc các tệp tin game (RAW)...";
+            BusyDetail = "Đang chuẩn bị danh sách tệp...";
+            BusyProgress = 0;
+            BusyPerformanceText = string.Empty;
+            ErrorMessage = null;
+            IsProjectLoaded = false;
+
+            // Stop existing autosave if active
+            _autoSaveService?.Stop();
+
+            // Clear undo history
+            _undoRedoService.Clear();
+
+            var files = Directory.GetFiles(folderPath, "*.json")
+                .Select(Path.GetFileName)
+                .Where(name => name != null && 
+                               (Regex.IsMatch(name, @"^Map\d+\.json$", RegexOptions.IgnoreCase) || 
+                                name.Equals("CommonEvents.json", StringComparison.OrdinalIgnoreCase)))
+                .Select(name => name!)
+                .OrderBy(name => name)
+                .ToList();
+
+            if (fileLimit != null)
+            {
+                // Ensure we only load the files that were part of the saved project
+                files = files.Where(f => fileLimit.Contains(f, StringComparer.OrdinalIgnoreCase)).ToList();
+            }
+
+            if (files.Count == 0)
+            {
+                throw new Exception("Không tìm thấy tệp Map*.json hoặc CommonEvents.json phù hợp trong thư mục.");
+            }
+
+            var allRowsList = new List<TranslationRow>();
+            var treeNodes = new List<FileNode>();
+
+            // Parse on background thread to keep UI interactive
+            await Task.Run(() =>
+            {
+                int totalFiles = files.Count;
+                int filesProcessed = 0;
+                int totalRowsParsed = 0;
+                var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+
+                foreach (var file in files)
+                {
+                    string fullPath = Path.Combine(folderPath, file);
+                    long fileSizeKB = new FileInfo(fullPath).Length / 1024;
+
+                    App.Current.Dispatcher.Invoke(() =>
+                    {
+                        BusyDetail = $"{file} ({fileSizeKB:N0} KB)";
+                        BusyProgress = (double)filesProcessed / totalFiles * 100;
+                    });
+
+                    var parsedRows = _parser.ParseFile(fullPath);
+                    if (parsedRows.Count > 0)
+                    {
+                        allRowsList.AddRange(parsedRows);
+
+                        // Calculate count of editable segments for stats in treeview
+                        int translatableCount = parsedRows.Count(r => r.RowType != RowType.SectionHeader);
+                        treeNodes.Add(new FileNode
+                        {
+                            FileName = file,
+                            FilePath = fullPath,
+                            IsLoaded = true,
+                            TotalRows = translatableCount,
+                            TranslatedRows = parsedRows.Count(r => r.RowType != RowType.SectionHeader && !string.IsNullOrEmpty(r.TranslationText))
+                        });
+                    }
+
+                    filesProcessed++;
+                    totalRowsParsed += parsedRows.Count;
+                    double elapsedSec = stopwatch.Elapsed.TotalSeconds;
+                    double speed = elapsedSec > 0 ? (totalRowsParsed / elapsedSec) : 0;
+
+                    App.Current.Dispatcher.Invoke(() =>
+                    {
+                        BusyPerformanceText = $"Thời gian: {elapsedSec:F2}s | Đã đọc: {totalRowsParsed:N0} dòng | Tốc độ: {speed:F0} dòng/giây";
+                    });
+                }
+            });
+
+            // Clear and update project state
+            Project.DataFolderPath = folderPath;
+            Glossary.Load(folderPath);
+            Project.LoadedFiles = files;
+            Project.AllRows.Clear();
+            Project.RowIndex.Clear();
+
+            int translatableTotal = 0;
+            foreach (var row in allRowsList)
+            {
+                Project.AllRows.Add(row);
+                if (row.RowType != RowType.SectionHeader)
+                {
+                    Project.RowIndex[row.UniqueKey] = row;
+                    translatableTotal++;
+                    
+                    // Subscribe to change triggers to update stats
+                    row.PropertyChanged += Row_PropertyChanged;
+                }
+            }
+
+            // Populate File Tree
+            FileTree.Clear();
+            var rootNode = new FileNode
+            {
+                FileName = "Data Folder",
+                FilePath = string.Empty, // Empty represents All Files root
+                TotalRows = translatableTotal,
+                TranslatedRows = allRowsList.Count(r => r.RowType != RowType.SectionHeader && !string.IsNullOrEmpty(r.TranslationText))
+            };
+            foreach (var node in treeNodes)
+            {
+                rootNode.Children.Add(node);
+            }
+            FileTree.Add(rootNode);
+
+            SelectedFile = rootNode;
+
+            // Update settings
+            _settingsService.CurrentSettings.LastDataFolder = folderPath;
+            _settingsService.SaveSettings();
+
+            IsProjectLoaded = true;
+
+            // Initialize AutoSave
+            _autoSaveService = new AutoSaveService(Project, _exportService);
+            _autoSaveService.AutoSaveCompleted += AutoSaveService_AutoSaveCompleted;
+            _autoSaveService.Start();
+            AutoSaveStatus = "Auto-save Active (Every 30s)";
+
+            UpdateStats();
         }
 
         private int RestoreBackup(string backupFilePath)
@@ -652,6 +713,176 @@ namespace Nelir.ViewModels
                 TranslationRow.UndoService = null;
                 row.TranslationText = entry.NewValue;
                 TranslationRow.UndoService = _undoRedoService;
+            }
+        }
+
+        [RelayCommand]
+        private void SaveProject()
+        {
+            if (!IsProjectLoaded) return;
+
+            if (string.IsNullOrEmpty(CurrentProjectFilePath))
+            {
+                SaveProjectAs();
+            }
+            else
+            {
+                SaveProjectToPath(CurrentProjectFilePath);
+            }
+        }
+
+        [RelayCommand]
+        private void SaveProjectAs()
+        {
+            if (!IsProjectLoaded) return;
+
+            var dialog = new SaveFileDialog
+            {
+                Title = "Lưu dự án dịch (.nel)",
+                Filter = "Dự án Nelir (*.nel)|*.nel",
+                DefaultExt = ".nel"
+            };
+
+            if (dialog.ShowDialog(Application.Current.MainWindow) == true)
+            {
+                SaveProjectToPath(dialog.FileName);
+            }
+        }
+
+        private void SaveProjectToPath(string path)
+        {
+            try
+            {
+                var dict = new Dictionary<string, string>();
+                foreach (var r in Project.AllRows)
+                {
+                    if (r.RowType != RowType.SectionHeader && !string.IsNullOrEmpty(r.TranslationText))
+                    {
+                        dict[r.UniqueKey] = r.TranslationText;
+                    }
+                }
+
+                var saveData = new ProjectSaveData
+                {
+                    DataFolderPath = Project.DataFolderPath,
+                    LoadedFiles = Project.LoadedFiles,
+                    Translations = dict
+                };
+
+                var options = new System.Text.Json.JsonSerializerOptions
+                {
+                    WriteIndented = true,
+                    Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+                };
+
+                string jsonContent = System.Text.Json.JsonSerializer.Serialize(saveData, options);
+                File.WriteAllText(path, jsonContent, System.Text.Encoding.UTF8);
+
+                CurrentProjectFilePath = path;
+                AutoSaveStatus = $"Saved project at {DateTime.Now:HH:mm:ss}";
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Lỗi khi lưu dự án: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        [RelayCommand]
+        private async Task OpenProject()
+        {
+            try
+            {
+                var dialog = new OpenFileDialog
+                {
+                    Title = "Mở dự án dịch (.nel)",
+                    Filter = "Dự án Nelir (*.nel)|*.nel",
+                    DefaultExt = ".nel"
+                };
+
+                if (dialog.ShowDialog(Application.Current.MainWindow) == true)
+                {
+                    await LoadProjectFileAsync(dialog.FileName);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Lỗi khi mở dự án: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private async Task LoadProjectFileAsync(string projectPath)
+        {
+            IsBusy = true;
+            BusyStatus = "Đang đọc tệp dự án (.nel)...";
+            BusyDetail = "Đang chuẩn bị dữ liệu...";
+            BusyProgress = 0;
+            BusyPerformanceText = string.Empty;
+            ErrorMessage = null;
+
+            try
+            {
+                string json = await Task.Run(() => File.ReadAllText(projectPath));
+                var saveData = System.Text.Json.JsonSerializer.Deserialize<ProjectSaveData>(json);
+                if (saveData == null)
+                {
+                    throw new Exception("Định dạng tệp .nel không hợp lệ hoặc bị hỏng.");
+                }
+
+                string rawFolder = saveData.DataFolderPath;
+
+                // Validate original data folder
+                if (string.IsNullOrEmpty(rawFolder) || !Directory.Exists(rawFolder))
+                {
+                    var relocateDialog = new OpenFolderDialog
+                    {
+                        Title = $"Không tìm thấy thư mục game gốc tại: {rawFolder}. Vui lòng chọn lại thư mục chứa Map*.json."
+                    };
+
+                    if (relocateDialog.ShowDialog(Application.Current.MainWindow) == true)
+                    {
+                        rawFolder = relocateDialog.FolderName;
+                    }
+                    else
+                    {
+                        // Cancel open operation
+                        return;
+                    }
+                }
+
+                // Call the folder loading logic to parse the game files
+                await LoadFolderInternalAsync(rawFolder, saveData.LoadedFiles);
+
+                // Overlay translations
+                TranslationRow.UndoService = null; // Disable undo-redo recording during overlay
+                int matchedCount = 0;
+                foreach (var kvp in saveData.Translations)
+                {
+                    if (Project.RowIndex.TryGetValue(kvp.Key, out var row))
+                    {
+                        row.TranslationText = kvp.Value;
+                        matchedCount++;
+                    }
+                }
+
+                TranslationRow.UndoService = _undoRedoService; // Restore undo-redo
+                CurrentProjectFilePath = projectPath;
+                UpdateStats();
+                UpdateAllFileNodesStats();
+
+                MessageBox.Show($"Đã tải dự án thành công. Áp dụng {matchedCount} dòng bản dịch từ dự án.", "Thành Công", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Lỗi khi tải dự án: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                // Clear state if failed
+                IsProjectLoaded = false;
+                Project.AllRows.Clear();
+                Project.RowIndex.Clear();
+                FileTree.Clear();
+            }
+            finally
+            {
+                IsBusy = false;
             }
         }
     }

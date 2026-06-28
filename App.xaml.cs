@@ -145,6 +145,51 @@ namespace Nelir
                 }
                 Console.WriteLine("Structured JSON export verification passed.");
 
+                // 4. Test project saving/loading (.nel format)
+                string nelProjFile = Path.Combine(outputFolder, "test_project.nel");
+                var savedDict = new Dictionary<string, string>();
+                foreach (var r in project.AllRows)
+                {
+                    if (r.RowType != RowType.SectionHeader && !string.IsNullOrEmpty(r.TranslationText))
+                    {
+                        savedDict[r.UniqueKey] = r.TranslationText;
+                    }
+                }
+                var projSave = new ProjectSaveData
+                {
+                    DataFolderPath = project.DataFolderPath,
+                    LoadedFiles = project.LoadedFiles,
+                    Translations = savedDict
+                };
+                string nelJson = System.Text.Json.JsonSerializer.Serialize(projSave, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+                File.WriteAllText(nelProjFile, nelJson, System.Text.Encoding.UTF8);
+
+                if (!File.Exists(nelProjFile))
+                {
+                    throw new FileNotFoundException(".nel project file was not created!");
+                }
+
+                // Try to load and deserialize the .nel file
+                string loadedNelJson = File.ReadAllText(nelProjFile);
+                var loadedProj = System.Text.Json.JsonSerializer.Deserialize<ProjectSaveData>(loadedNelJson);
+                if (loadedProj == null)
+                {
+                    throw new Exception("Failed to deserialize .nel project file");
+                }
+                if (loadedProj.DataFolderPath != project.DataFolderPath)
+                {
+                    throw new Exception("Deserialized DataFolderPath does not match");
+                }
+                if (loadedProj.Translations.Count != 1 || !loadedProj.Translations.ContainsKey(dialogRow.UniqueKey))
+                {
+                    throw new Exception("Deserialized Translations list is incorrect");
+                }
+                if (loadedProj.Translations[dialogRow.UniqueKey] != dialogRow.TranslationText)
+                {
+                    throw new Exception("Deserialized TranslationText does not match");
+                }
+                Console.WriteLine("Nel project file save/load verification passed.");
+
                 Console.WriteLine("DIAGNOSTICS PASSED SUCCESSFULLY!");
             }
             catch (Exception ex)

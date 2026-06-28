@@ -7,7 +7,7 @@
         xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
         xmlns:views="clr-namespace:Nelir.Views"
         mc:Ignorable="d"
-        Title="Nelir's RPGM Translator v1.0" Height="800" Width="1400"
+        Title="{Binding WindowTitle}" Height="800" Width="1400"
         WindowStartupLocation="CenterScreen"
         Background="{DynamicResource BgBase}"
         Foreground="{DynamicResource TextPrimary}"
@@ -25,7 +25,10 @@
 
     <Window.InputBindings>
         <KeyBinding Key="O" Modifiers="Control" Command="{Binding SelectFolderCommand}"/>
-        <KeyBinding Key="S" Modifiers="Control" Command="{Binding ExportFlatCommand}"/>
+        <KeyBinding Key="O" Modifiers="Control+Shift" Command="{Binding OpenProjectCommand}"/>
+        <KeyBinding Key="S" Modifiers="Control" Command="{Binding SaveProjectCommand}"/>
+        <KeyBinding Key="S" Modifiers="Control+Shift" Command="{Binding SaveProjectAsCommand}"/>
+        <KeyBinding Key="E" Modifiers="Control" Command="{Binding ExportFlatCommand}"/>
         <KeyBinding Key="Z" Modifiers="Control" Command="{Binding UndoCommand}"/>
         <KeyBinding Key="Y" Modifiers="Control" Command="{Binding RedoCommand}"/>
     </Window.InputBindings>
@@ -54,9 +57,13 @@
                 <StackPanel Grid.Column="0" Orientation="Horizontal">
                     <Button Content="📁 Thư mục RAW (Đọc)" Style="{StaticResource ButtonPrimary}"
                             Command="{Binding SelectFolderCommand}" Margin="0,0,10,0"/>
+                    <Button Content="📂 Mở dự án (.nel)" Style="{StaticResource ButtonSecondary}"
+                            Command="{Binding OpenProjectCommand}" Margin="0,0,10,0"/>
+                    <Button Content="💾 Lưu dự án (.nel)" Style="{StaticResource ButtonSecondary}"
+                            Command="{Binding SaveProjectCommand}" IsEnabled="{Binding IsProjectLoaded}" Margin="0,0,10,0"/>
                     <Button Content="📥 Thư mục MTL (Đọc)" Style="{StaticResource ButtonSecondary}"
                             Command="{Binding ImportMtlCommand}" IsEnabled="{Binding IsProjectLoaded}" Margin="0,0,10,0"/>
-                    <Button Content="💾 Xuất flat JSON" Style="{StaticResource ButtonSecondary}"
+                    <Button Content="💾 Xuất bản dịch" Style="{StaticResource ButtonSecondary}"
                             Command="{Binding ExportFlatCommand}" IsEnabled="{Binding IsProjectLoaded}" Margin="0,0,10,0"/>
                     <Button Content="🔍 Tìm &amp; Thay thế" Style="{StaticResource ButtonSecondary}"
                             Click="FindReplaceButton_Click" IsEnabled="{Binding IsProjectLoaded}" Margin="0,0,10,0"/>
@@ -150,16 +157,23 @@
                       Visibility="{Binding IsProjectLoaded, Converter={StaticResource InverseBoolConverter}, ConverterParameter=invert}">
                     <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
                         <TextBlock Text="Nelir's RPGM Translator" Style="{StaticResource TextHeadingLg}" HorizontalAlignment="Center" Margin="0,0,0,15"/>
-                        <TextBlock Text="Mở thư mục RAW chứa Map*.json và CommonEvents.json để bắt đầu dịch." Style="{StaticResource TextBodySecondary}" HorizontalAlignment="Center" Margin="0,0,0,15"/>
-                        <Button Content="📂 Mở Thư Mục RAW" Style="{StaticResource ButtonPrimary}" HorizontalAlignment="Center" Padding="20,10"
-                                Command="{Binding SelectFolderCommand}" Margin="0,0,0,15"/>
+                        <TextBlock Text="Mở thư mục RAW hoặc Mở dự án đã lưu để bắt đầu dịch." Style="{StaticResource TextBodySecondary}" HorizontalAlignment="Center" Margin="0,0,0,15"/>
+                        
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,15">
+                            <Button Content="📁 Mở Thư Mục RAW" Style="{StaticResource ButtonPrimary}" Padding="20,10"
+                                    Command="{Binding SelectFolderCommand}" Margin="0,0,15,0"/>
+                            <Button Content="📂 Mở Dự Án (.nel)" Style="{StaticResource ButtonSecondary}" Padding="20,10"
+                                    Command="{Binding OpenProjectCommand}"/>
+                        </StackPanel>
                         
                         <Border BorderBrush="{DynamicResource BorderDefault}" BorderThickness="1" CornerRadius="{StaticResource RadiusMd}"
                                 Padding="15" Background="{DynamicResource BgSurface}" MaxWidth="400" Margin="0,20,0,0">
                             <StackPanel>
                                 <TextBlock Text="Phím tắt hữu ích:" Style="{StaticResource TextLabel}" Margin="0,0,0,8"/>
-                                <TextBlock Text="• Ctrl + O : Chọn thư mục game" Style="{StaticResource TextBodySecondary}" Margin="0,0,0,6"/>
-                                <TextBlock Text="• Ctrl + S : Lưu/Xuất Flat JSON" Style="{StaticResource TextBodySecondary}" Margin="0,0,0,6"/>
+                                <TextBlock Text="• Ctrl + O : Mở thư mục RAW" Style="{StaticResource TextBodySecondary}" Margin="0,0,0,6"/>
+                                <TextBlock Text="• Ctrl + Shift + O : Mở dự án (.nel)" Style="{StaticResource TextBodySecondary}" Margin="0,0,0,6"/>
+                                <TextBlock Text="• Ctrl + S : Lưu dự án (.nel)" Style="{StaticResource TextBodySecondary}" Margin="0,0,0,6"/>
+                                <TextBlock Text="• Ctrl + E : Xuất bản dịch" Style="{StaticResource TextBodySecondary}" Margin="0,0,0,6"/>
                                 <TextBlock Text="• Ctrl + F : Tìm kiếm từ khoá" Style="{StaticResource TextBodySecondary}" Margin="0,0,0,6"/>
                                 <TextBlock Text="• Ctrl + H : Tìm kiếm và Thay thế" Style="{StaticResource TextBodySecondary}"/>
                             </StackPanel>

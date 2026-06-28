@@ -22,13 +22,13 @@ namespace Nelir.Views
             if (!showReplace)
             {
                 MainTabControl.SelectedIndex = 0;
-                Height = 210;
+                Height = 260;
                 Title = "Tìm kiếm (Find)";
             }
             else
             {
                 MainTabControl.SelectedIndex = 1;
-                Height = 270;
+                Height = 325;
                 Title = "Thay thế (Replace)";
             }
         }
@@ -41,7 +41,7 @@ namespace Nelir.Views
             {
                 if (MainTabControl.SelectedIndex == 0) // Find
                 {
-                    Height = 210;
+                    Height = 260;
                     Title = "Tìm kiếm (Find)";
                     // Sync text
                     if (FindTextBox_Find != null && FindTextBox_Replace != null)
@@ -52,7 +52,7 @@ namespace Nelir.Views
                 }
                 else if (MainTabControl.SelectedIndex == 1) // Replace
                 {
-                    Height = 270;
+                    Height = 325;
                     Title = "Thay thế (Replace)";
                     // Sync text
                     if (FindTextBox_Find != null && FindTextBox_Replace != null)

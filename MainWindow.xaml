@@ -15,6 +15,7 @@
         Closing="Window_Closing">
 
     <Window.Resources>
+        <converters:GroupTranslatedCountConverter x:Key="GroupTranslatedCountConverter"/>
         <converters:BindingProxy x:Key="DataContextProxy" Data="{Binding}"/>
         <converters:RowTypeColorConverter x:Key="RowTypeColorConverter"/>
         <converters:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>
@@ -60,27 +61,69 @@
                 </Grid.ColumnDefinitions>
 
                 <StackPanel Grid.Column="0" Orientation="Horizontal">
-                    <Button Content="📁 Dự án ▾" Style="{StaticResource ButtonPrimary}" Click="FileMenuButton_Click" Margin="0,0,10,0">
+                    <Button Style="{StaticResource ButtonPrimary}" Click="FileMenuButton_Click" Margin="0,0,10,0" Height="36">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="&#xE838;" Style="{StaticResource IconGlyph}" Margin="0,0,8,0"/>
+                            <TextBlock Text="Dự án" VerticalAlignment="Center"/>
+                            <TextBlock Text="&#xE70D;" Style="{StaticResource IconGlyph}" FontSize="10" Margin="6,0,0,0"/>
+                        </StackPanel>
                         <Button.ContextMenu>
                             <ContextMenu>
-                                <MenuItem Header="📁 Chọn thư mục RAW (Đọc)" Command="{Binding SelectFolderCommand}"/>
-                                <MenuItem Header="📂 Mở dự án (.nel)" Command="{Binding OpenProjectCommand}"/>
-                                <MenuItem Header="💾 Lưu dự án (.nel)" Command="{Binding SaveProjectCommand}" IsEnabled="{Binding IsProjectLoaded}"/>
+                                <MenuItem Header="Chọn thư mục RAW (Đọc)" Command="{Binding SelectFolderCommand}">
+                                    <MenuItem.Icon>
+                                        <TextBlock Text="&#xE838;" Style="{StaticResource IconGlyph}" FontSize="14"/>
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                                <MenuItem Header="Mở dự án (.nel)" Command="{Binding OpenProjectCommand}">
+                                    <MenuItem.Icon>
+                                        <TextBlock Text="&#xE8DA;" Style="{StaticResource IconGlyph}" FontSize="14"/>
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                                <MenuItem Header="Lưu dự án (.nel)" Command="{Binding SaveProjectCommand}" IsEnabled="{Binding IsProjectLoaded}">
+                                    <MenuItem.Icon>
+                                        <TextBlock Text="&#xE74E;" Style="{StaticResource IconGlyph}" FontSize="14"/>
+                                    </MenuItem.Icon>
+                                </MenuItem>
                                 <Separator/>
-                                <MenuItem Header="💾 Xuất bản dịch" Command="{Binding ExportFlatCommand}" IsEnabled="{Binding IsProjectLoaded}"/>
+                                <MenuItem Header="Xuất bản dịch" Command="{Binding ExportFlatCommand}" IsEnabled="{Binding IsProjectLoaded}">
+                                    <MenuItem.Icon>
+                                        <TextBlock Text="&#xE74E;" Style="{StaticResource IconGlyph}" FontSize="14"/>
+                                    </MenuItem.Icon>
+                                </MenuItem>
                             </ContextMenu>
                         </Button.ContextMenu>
                     </Button>
 
-                    <Button Content="🛠️ Công cụ ▾" Style="{StaticResource ButtonSecondary}" Click="ToolsMenuButton_Click" Margin="0,0,10,0">
+                    <Button Style="{StaticResource ButtonSecondary}" Click="ToolsMenuButton_Click" Margin="0,0,10,0" Height="36">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="&#xE90F;" Style="{StaticResource IconGlyph}" Margin="0,0,8,0"/>
+                            <TextBlock Text="Công cụ" VerticalAlignment="Center"/>
+                            <TextBlock Text="&#xE70D;" Style="{StaticResource IconGlyph}" FontSize="10" Margin="6,0,0,0"/>
+                        </StackPanel>
                         <Button.ContextMenu>
                             <ContextMenu>
-                                <MenuItem Header="🔍 Tìm &amp; Thay thế" Click="FindReplaceButton_Click" IsEnabled="{Binding IsProjectLoaded}"/>
-                                <MenuItem Header="📚 Thuật ngữ (Glossary)" Command="{Binding OpenGlossaryCommand}" IsEnabled="{Binding IsProjectLoaded}"/>
+                                <MenuItem Header="Tìm &amp; Thay thế" Click="FindReplaceButton_Click" IsEnabled="{Binding IsProjectLoaded}">
+                                    <MenuItem.Icon>
+                                        <TextBlock Text="&#xE721;" Style="{StaticResource IconGlyph}" FontSize="14"/>
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                                <MenuItem Header="Thuật ngữ (Glossary)" Command="{Binding OpenGlossaryCommand}" IsEnabled="{Binding IsProjectLoaded}">
+                                    <MenuItem.Icon>
+                                        <TextBlock Text="&#xE8A5;" Style="{StaticResource IconGlyph}" FontSize="14"/>
+                                    </MenuItem.Icon>
+                                </MenuItem>
                                 <Separator/>
-                                <MenuItem Header="📥 Nhập thư mục MTL (Đọc)" Command="{Binding ImportMtlCommand}" IsEnabled="{Binding IsProjectLoaded}"/>
-                                <MenuItem Header="⚡ MTL → Tất cả dòng trống" Command="{Binding BulkApplyMtlCommand}" IsEnabled="{Binding IsProjectLoaded}"
-                                          ToolTip="Copy MTL vào tất cả dòng chưa dịch trong file đang chọn (không ghi đè dòng đã có bản dịch)"/>
+                                <MenuItem Header="Nhập thư mục MTL (Đọc)" Command="{Binding ImportMtlCommand}" IsEnabled="{Binding IsProjectLoaded}">
+                                    <MenuItem.Icon>
+                                        <TextBlock Text="&#xE896;" Style="{StaticResource IconGlyph}" FontSize="14"/>
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                                <MenuItem Header="MTL → Tất cả dòng trống" Command="{Binding BulkApplyMtlCommand}" IsEnabled="{Binding IsProjectLoaded}"
+                                          ToolTip="Copy MTL vào tất cả dòng chưa dịch trong file đang chọn (không ghi đè dòng đã có bản dịch)">
+                                    <MenuItem.Icon>
+                                        <TextBlock Text="&#xE945;" Style="{StaticResource IconGlyph}" FontSize="14"/>
+                                    </MenuItem.Icon>
+                                </MenuItem>
                             </ContextMenu>
                         </Button.ContextMenu>
                     </Button>
@@ -88,21 +131,21 @@
                     <!-- Search Box -->
                     <Border BorderBrush="{DynamicResource BorderDefault}" BorderThickness="1" 
                             CornerRadius="{StaticResource RadiusMd}" Background="{DynamicResource BgSunken}"
-                                 Width="260" Margin="5,0,0,0">
+                            Width="260" Height="36" VerticalAlignment="Center" Margin="5,0,0,0"
+                            Effect="{StaticResource ShadowSm}">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
-                            <TextBlock Text="🔍" VerticalAlignment="Center" Margin="8,0,4,0" Foreground="{DynamicResource TextTertiary}"/>
+                            <TextBlock Text="&#xE721;" Style="{StaticResource IconGlyph}" VerticalAlignment="Center" Margin="10,0,4,0" Foreground="{DynamicResource TextTertiary}"/>
                             <TextBox Grid.Column="1" Background="Transparent" BorderThickness="0" 
                                      Foreground="{DynamicResource TextPrimary}" CaretBrush="{DynamicResource Accent}"
                                      Padding="4,6" FontSize="{StaticResource FontSizeSm}"
                                      Text="{Binding SearchQuery, UpdateSourceTrigger=PropertyChanged}"
                                      VerticalAlignment="Center"/>
                         </Grid>
-                    </Border>
-                </StackPanel>
+                    </Border>                </StackPanel>
 
                 <!-- Right Controls: Loader status & Theme Toggle -->
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
@@ -118,14 +161,13 @@
                                   Height="36" Margin="0,0,8,0" Padding="8,4"/>
 
                     <Button Command="{Binding OpenSettingsCommand}"
-                            Content="⚙️"
                             Style="{StaticResource ButtonGhost}"
                             ToolTip="Cài đặt"
                             Width="36" Height="36"
                             Padding="0"
-                            FontSize="16"
-                            HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
-                            Margin="8,0,0,0"/>
+                            Margin="8,0,0,0">
+                        <TextBlock Text="&#xE713;" Style="{StaticResource IconGlyph}" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Button>
                 </StackPanel>
             </Grid>
         </Border>
@@ -142,7 +184,8 @@
 
             <!-- LEFT PANEL: TREEVIEW -->
             <Border Grid.Column="0" Background="{DynamicResource BgSunken}" 
-                    BorderBrush="{DynamicResource BorderDefault}" BorderThickness="0,0,1,0">
+                    BorderBrush="{DynamicResource BorderDefault}" BorderThickness="0,0,1,0"
+                    Effect="{StaticResource ShadowSm}">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -178,18 +221,31 @@
                 <Grid Grid.Row="0" Grid.RowSpan="3" Background="{DynamicResource BgBase}" 
                       Visibility="{Binding IsProjectLoaded, Converter={StaticResource InverseBoolConverter}, ConverterParameter=invert}">
                     <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <!-- Visual Anchor Icon -->
+                        <TextBlock Text="&#xE8E5;" FontFamily="Segoe Fluent Icons" FontSize="64"
+                                   Foreground="{DynamicResource AccentMuted}"
+                                   HorizontalAlignment="Center" Margin="0,0,0,20"/>
                         <TextBlock Text="Nelir's RPGM Translator" Style="{StaticResource TextHeadingLg}" HorizontalAlignment="Center" Margin="0,0,0,15"/>
                         <TextBlock Text="Mở thư mục RAW hoặc Mở dự án đã lưu để bắt đầu dịch." Style="{StaticResource TextBodySecondary}" HorizontalAlignment="Center" Margin="0,0,0,15"/>
                         
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,15">
-                            <Button Content="📁 Mở Thư Mục RAW" Style="{StaticResource ButtonPrimary}" Padding="20,10"
-                                    Command="{Binding SelectFolderCommand}" Margin="0,0,15,0"/>
-                            <Button Content="📂 Mở Dự Án (.nel)" Style="{StaticResource ButtonSecondary}" Padding="20,10"
-                                    Command="{Binding OpenProjectCommand}"/>
+                            <Button Style="{StaticResource ButtonPrimary}" Padding="20,10" Command="{Binding SelectFolderCommand}" Margin="0,0,15,0">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="&#xE838;" Style="{StaticResource IconGlyph}" Margin="0,0,8,0"/>
+                                    <TextBlock Text="Mở Thư Mục RAW" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                            <Button Style="{StaticResource ButtonSecondary}" Padding="20,10" Command="{Binding OpenProjectCommand}">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="&#xE8DA;" Style="{StaticResource IconGlyph}" Margin="0,0,8,0"/>
+                                    <TextBlock Text="Mở Dự Án (.nel)" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
                         </StackPanel>
                         
                         <Border BorderBrush="{DynamicResource BorderDefault}" BorderThickness="1" CornerRadius="{StaticResource RadiusMd}"
-                                Padding="15" Background="{DynamicResource BgSurface}" MaxWidth="400" Margin="0,20,0,0">
+                                Padding="15" Background="{DynamicResource BgSurface}" MaxWidth="400" Margin="0,20,0,0"
+                                Effect="{StaticResource ShadowSm}">
                             <StackPanel>
                                 <TextBlock Text="Phím tắt hữu ích:" Style="{StaticResource TextLabel}" Margin="0,0,0,8"/>
                                 <TextBlock Text="• Ctrl + O : Mở thư mục RAW" Style="{StaticResource TextBodySecondary}" Margin="0,0,0,6"/>
@@ -221,13 +277,22 @@
                             <GroupStyle.HeaderTemplate>
                                 <DataTemplate>
                                     <Border Background="{DynamicResource BgSunken}" BorderBrush="{DynamicResource BorderDefault}" BorderThickness="0,1,0,1" Padding="12,6">
-                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                            <TextBlock Text="📁" Margin="0,0,6,0" VerticalAlignment="Center"/>
-                                            <TextBlock Text="{Binding Name}" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
-                                            <TextBlock Text=" (" Foreground="{DynamicResource TextTertiary}" VerticalAlignment="Center"/>
-                                            <TextBlock Text="{Binding ItemCount}" Foreground="{DynamicResource TextTertiary}" VerticalAlignment="Center"/>
-                                            <TextBlock Text=" dòng)" Foreground="{DynamicResource TextTertiary}" VerticalAlignment="Center"/>
-                                        </StackPanel>
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            
+                                            <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                                                <TextBlock Text="&#xE8B7;" FontFamily="Segoe Fluent Icons" FontSize="13" Margin="0,0,6,0" VerticalAlignment="Center" Foreground="{DynamicResource TextSecondary}"/>
+                                                <TextBlock Text="{Binding Name}" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
+                                            </StackPanel>
+
+                                            <!-- Mini progress badge -->
+                                            <Border Grid.Column="1" Background="{DynamicResource BgSurface}" CornerRadius="{StaticResource RadiusSm}" Padding="8,2" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding Items, Converter={StaticResource GroupTranslatedCountConverter}}" Style="{StaticResource TextCaption}" Foreground="{DynamicResource TextSecondary}" FontWeight="SemiBold"/>
+                                            </Border>
+                                        </Grid>
                                     </Border>
                                 </DataTemplate>
                             </GroupStyle.HeaderTemplate>
@@ -354,7 +419,21 @@
                 <!-- BOTTOM FOCUS PANEL -->
                 <Border Grid.Row="2" Background="{DynamicResource BgSurface}" 
                         BorderBrush="{DynamicResource BorderDefault}" BorderThickness="0,1,0,0" Padding="15">
-                    <Grid DataContext="{Binding ElementName=MainGrid, Path=SelectedItem}">
+                    <Border.Effect>
+                        <DropShadowEffect Color="#000000" Opacity="0.10" BlurRadius="12"
+                                           ShadowDepth="-3" Direction="90"/>
+                    </Border.Effect>
+                    <Border.Triggers>
+                        <EventTrigger RoutedEvent="Binding.TargetUpdated">
+                            <BeginStoryboard>
+                                <Storyboard>
+                                    <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                                     From="0.4" To="1" Duration="0:0:0.15"/>
+                                </Storyboard>
+                            </BeginStoryboard>
+                        </EventTrigger>
+                    </Border.Triggers>
+                    <Grid DataContext="{Binding ElementName=MainGrid, Path=SelectedItem, NotifyOnTargetUpdated=True}">
                         <!-- Display fallback instruction if no row is selected -->
                         <Grid.Style>
                             <Style TargetType="Grid">
@@ -420,20 +499,32 @@
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
                 <!-- Completion Stats -->
                 <TextBlock Grid.Column="0" Text="{Binding CompletionText}" Style="{StaticResource TextCaption}" VerticalAlignment="Center"/>
 
+                <!-- Divider -->
+                <Border Grid.Column="1" Width="1" Height="12" Margin="12,0" Background="{DynamicResource BorderDefault}"/>
+
+                <!-- Visible row count -->
+                <TextBlock Grid.Column="2" Text="{Binding VisibleRowCountText}" Style="{StaticResource TextCaption}" VerticalAlignment="Center"/>
+
                 <!-- Small Visual Progress Bar -->
-                <ProgressBar Grid.Column="1" Maximum="100" Value="{Binding CompletionPercentage}" 
+                <ProgressBar Grid.Column="3" Maximum="100" Value="{Binding CompletionPercentage}" 
                              Height="4" Foreground="{DynamicResource Accent}" Background="{DynamicResource BorderDefault}"
                              BorderThickness="0" Margin="25,0" VerticalAlignment="Center"/>
 
+                <!-- Divider -->
+                <Border Grid.Column="4" Width="1" Height="12" Margin="12,0" Background="{DynamicResource BorderDefault}"/>
+
                 <!-- Autosave State -->
-                <TextBlock Grid.Column="2" Text="{Binding AutoSaveStatus}" Style="{StaticResource TextCaption}" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center"/>
+                <TextBlock Grid.Column="5" Text="{Binding AutoSaveStatus}" Style="{StaticResource TextCaption}" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center"/>
             </Grid>
         </Border>
 
@@ -442,12 +533,35 @@
         <!-- ======================================================================= -->
         <Grid Grid.Row="0" Grid.RowSpan="3" Background="{DynamicResource BgOverlay}" Focusable="True"
               Visibility="{Binding IsBusy, Converter={StaticResource NullToVisibilityConverter}}">
+            <Grid.Style>
+                <Style TargetType="Grid">
+                    <Setter Property="Opacity" Value="0"/>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsBusy}" Value="True">
+                            <DataTrigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                                         To="1" Duration="0:0:0.12"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </DataTrigger.EnterActions>
+                            <DataTrigger.ExitActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                                         To="0" Duration="0:0:0.12"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </DataTrigger.ExitActions>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Grid.Style>
             <Border HorizontalAlignment="Center" VerticalAlignment="Center" 
                     Background="{DynamicResource BgSurface}" BorderBrush="{DynamicResource BorderDefault}" BorderThickness="1"
-                    CornerRadius="{StaticResource RadiusMd}" Padding="35" Width="550">
-                <Border.Effect>
-                    <DropShadowEffect BlurRadius="30" Color="#10000000" Opacity="0.15" ShadowDepth="5"/>
-                </Border.Effect>
+                    CornerRadius="{StaticResource RadiusMd}" Padding="35" Width="550"
+                    Effect="{StaticResource ShadowLg}">
                 
                 <StackPanel>
                     <!-- Spinner / Header Info -->

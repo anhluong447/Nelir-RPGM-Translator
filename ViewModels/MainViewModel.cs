@@ -110,6 +110,9 @@ namespace Nelir.ViewModels
         // Binds to the DataGrid
         public ICollectionView RowsView { get; }
 
+        public string VisibleRowCountText
+            => $"{RowsView.Cast<TranslationRow>().Count(r => r.RowType != RowType.SectionHeader)} dòng hiển thị";
+
         public MainViewModel()
         {
             _characterRegistry = new CharacterRegistryService();
@@ -160,6 +163,7 @@ namespace Nelir.ViewModels
         partial void OnSelectedFileChanged(FileNode? value)
         {
             RowsView.Refresh();
+            OnPropertyChanged(nameof(VisibleRowCountText));
         }
 
         partial void OnSearchQueryChanged(string value)
@@ -172,6 +176,7 @@ namespace Nelir.ViewModels
         {
             _searchDebounceTimer.Stop();
             RowsView.Refresh();
+            OnPropertyChanged(nameof(VisibleRowCountText));
         }
 
         private bool FilterRows(object item)

@@ -1,5 +1,24 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!-- ======================================================================= -->
+    <!-- SHADOWS                                                                 -->
+    <!-- ======================================================================= -->
+    <DropShadowEffect x:Key="ShadowSm" Color="#000000" Opacity="0.08"
+                       BlurRadius="6" ShadowDepth="1" Direction="270"/>
+    <DropShadowEffect x:Key="ShadowMd" Color="#000000" Opacity="0.12"
+                       BlurRadius="14" ShadowDepth="3" Direction="270"/>
+    <DropShadowEffect x:Key="ShadowLg" Color="#000000" Opacity="0.18"
+                       BlurRadius="24" ShadowDepth="6" Direction="270"/>
+
+    <!-- ======================================================================= -->
+    <!-- ICONS                                                                   -->
+    <!-- ======================================================================= -->
+    <Style x:Key="IconGlyph" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="Segoe Fluent Icons"/>
+        <Setter Property="FontSize" Value="16"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+    </Style>
+
 
     <!-- ======================================================================= -->
     <!-- BUTTONS                                                                 -->
@@ -244,53 +263,64 @@
         </Style.Resources>
     </Style>
 
-    <!-- DataGridColumnHeader -->
-    <Style TargetType="DataGridColumnHeader">
-        <Setter Property="Background" Value="{DynamicResource BgSunken}"/>
-        <Setter Property="Foreground" Value="{DynamicResource TextSecondary}"/>
-        <Setter Property="FontWeight" Value="SemiBold"/>
-        <Setter Property="Padding" Value="12,10"/>
-        <Setter Property="BorderBrush" Value="{DynamicResource BorderDefault}"/>
-        <Setter Property="BorderThickness" Value="0,0,1,1"/>
-        <Setter Property="HorizontalContentAlignment" Value="Left"/>
-        <Setter Property="VerticalContentAlignment" Value="Center"/>
-        <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate TargetType="DataGridColumnHeader">
-                    <Grid>
-                        <Border Background="{TemplateBinding Background}"
-                                BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}"
-                                Padding="{TemplateBinding Padding}">
-                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
-                        </Border>
-                        <Thumb x:Name="PART_LeftHeaderGripper"
-                               HorizontalAlignment="Left"
-                               Width="8"
-                               Cursor="SizeWE">
-                            <Thumb.Template>
-                                <ControlTemplate TargetType="Thumb">
-                                    <Border Background="Transparent"/>
-                                </ControlTemplate>
-                            </Thumb.Template>
-                        </Thumb>
-                        <Thumb x:Name="PART_RightHeaderGripper"
-                               HorizontalAlignment="Right"
-                               Width="8"
-                               Cursor="SizeWE">
-                            <Thumb.Template>
-                                <ControlTemplate TargetType="Thumb">
-                                    <Border Background="Transparent"/>
-                                </ControlTemplate>
-                            </Thumb.Template>
-                        </Thumb>
-                    </Grid>
-                </ControlTemplate>
-            </Setter.Value>
-        </Setter>
-    </Style>
-
+    <!-- DataGridColumnHeader -->
+    <Style TargetType="DataGridColumnHeader">
+        <Setter Property="Background" Value="{DynamicResource BgSunken}"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextSecondary}"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="FontSize" Value="{StaticResource FontSizeSm}"/>
+        <Setter Property="Padding" Value="10,8"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderDefault}"/>
+        <Setter Property="BorderThickness" Value="0,0,1,1"/>
+        <Setter Property="HorizontalContentAlignment" Value="Left"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="DataGridColumnHeader">
+                    <Border Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            Padding="{TemplateBinding Padding}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <ContentPresenter Grid.Column="0"
+                                              HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                              VerticalAlignment="Center"/>
+                            <Path x:Name="SortArrow" Grid.Column="1"
+                                  Visibility="Collapsed" Width="8" Height="6"
+                                  Fill="{DynamicResource TextTertiary}"
+                                  Data="M 0 0 L 8 0 L 4 6 Z" Margin="6,0,0,0"
+                                  VerticalAlignment="Center"/>
+                            <!-- Column resize grip -->
+                            <Thumb x:Name="PART_RightHeaderGripper"
+                                   HorizontalAlignment="Right"
+                                   Width="4" Cursor="SizeWE"
+                                   Background="Transparent"/>
+                        </Grid>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="SortDirection" Value="Ascending">
+                            <Setter TargetName="SortArrow" Property="Visibility" Value="Visible"/>
+                        </Trigger>
+                        <Trigger Property="SortDirection" Value="Descending">
+                            <Setter TargetName="SortArrow" Property="Visibility" Value="Visible"/>
+                            <Setter TargetName="SortArrow" Property="RenderTransform">
+                                <Setter.Value>
+                                    <RotateTransform Angle="180" CenterX="4" CenterY="3"/>
+                                </Setter.Value>
+                            </Setter>
+                        </Trigger>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Background" Value="{DynamicResource BgSurface}"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
     <!-- DataGridRow -->
     <Style TargetType="DataGridRow">
         <Setter Property="BorderThickness" Value="0"/>
@@ -521,7 +551,18 @@
         </Setter>
     </Style>
 
-    <!-- ======================================================================= -->
+        <!-- ======================================================================= -->
+    <!-- CONTEXTMENU                                                             -->
+    <!-- ======================================================================= -->
+    <Style TargetType="ContextMenu">
+        <Setter Property="Background" Value="{DynamicResource BgSurface}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderDefault}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Effect" Value="{StaticResource ShadowMd}"/>
+        <Setter Property="Padding" Value="4"/>
+    </Style>
+
+<!-- ======================================================================= -->
     <!-- SCROLLBAR                                                                -->
     <!-- ======================================================================= -->
 

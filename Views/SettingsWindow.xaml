@@ -95,6 +95,60 @@
 
                 <Separator Margin="0,8,0,16" Background="{DynamicResource BorderDefault}"/>
 
+                <!-- Section: AI Gợi ý dịch (OpenRouter) -->
+                <TextBlock Text="AI Gợi ý dịch (OpenRouter)" Style="{StaticResource TextHeadingSm}" Margin="0,0,0,8"/>
+                <TextBlock Text="API key dùng để gọi gợi ý dịch theo dòng (chỉ chọn model FREE). Lấy key tại openrouter.ai/keys."
+                           Style="{StaticResource TextCaption}" Foreground="{DynamicResource TextTertiary}" TextWrapping="Wrap" Margin="0,0,0,10"/>
+                <TextBox Text="{Binding OpenRouterApiKey, UpdateSourceTrigger=PropertyChanged}"
+                         Style="{StaticResource InputDefault}" Margin="0,0,0,16"/>
+
+                <!-- Model Selection Preferences -->
+                <DockPanel Margin="0,0,0,10" LastChildFill="False">
+                    <TextBlock Text="Độ ưu tiên các Mô hình (Models)" Style="{StaticResource TextLabel}" VerticalAlignment="Center"/>
+                    <Button Content="Làm mới danh sách"
+                            DockPanel.Dock="Right"
+                            Style="{StaticResource ButtonSecondary}"
+                            Command="{Binding RefreshAvailableModelsCommand}"
+                            Padding="8,4" Height="28"/>
+                </DockPanel>
+
+                <Grid Margin="0,0,0,16">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    
+                    <!-- Choice 1 -->
+                    <StackPanel Grid.Column="0" Margin="0,0,8,0">
+                        <TextBlock Text="Nguyện vọng 1" Style="{StaticResource TextCaption}" Foreground="{DynamicResource TextTertiary}" Margin="0,0,0,4"/>
+                        <ComboBox ItemsSource="{Binding AvailableFreeModels}"
+                                  Text="{Binding PreferredModel1, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
+                                  IsEditable="True"
+                                  Height="32" VerticalContentAlignment="Center"/>
+                    </StackPanel>
+
+                    <!-- Choice 2 -->
+                    <StackPanel Grid.Column="1" Margin="4,0,4,0">
+                        <TextBlock Text="Nguyện vọng 2" Style="{StaticResource TextCaption}" Foreground="{DynamicResource TextTertiary}" Margin="0,0,0,4"/>
+                        <ComboBox ItemsSource="{Binding AvailableFreeModels}"
+                                  Text="{Binding PreferredModel2, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
+                                  IsEditable="True"
+                                  Height="32" VerticalContentAlignment="Center"/>
+                    </StackPanel>
+
+                    <!-- Choice 3 -->
+                    <StackPanel Grid.Column="2" Margin="8,0,0,0">
+                        <TextBlock Text="Nguyện vọng 3" Style="{StaticResource TextCaption}" Foreground="{DynamicResource TextTertiary}" Margin="0,0,0,4"/>
+                        <ComboBox ItemsSource="{Binding AvailableFreeModels}"
+                                  Text="{Binding PreferredModel3, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
+                                  IsEditable="True"
+                                  Height="32" VerticalContentAlignment="Center"/>
+                    </StackPanel>
+                </Grid>
+
+                <Separator Margin="0,8,0,16" Background="{DynamicResource BorderDefault}"/>
+
                 <!-- Section: Nhân vật (Bust Registry) -->
                 <TextBlock Text="Nhân vật (Bust Registry)" Style="{StaticResource TextHeadingSm}" Margin="0,0,0,8"/>
                 <TextBlock Text="Áp dụng tên hiển thị cho các mã sprite $bust khi phân tích script (Lưu tại character_registry.json)."

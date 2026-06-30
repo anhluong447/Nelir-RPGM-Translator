@@ -27,8 +27,11 @@ namespace Nelir.ViewModels
         private readonly UndoRedoService _undoRedoService;
         private readonly ThemeService _themeService;
         private readonly CharacterRegistryService _characterRegistry;
+        private readonly AiSuggestionService _aiSuggestionService;
         private AutoSaveService? _autoSaveService;
         private readonly System.Windows.Threading.DispatcherTimer _searchDebounceTimer;
+        private System.Threading.CancellationTokenSource? _currentSuggestionCts;
+        private TranslationRow? _activeSuggestionRow;
 
         public CharacterRegistryService CharacterRegistry => _characterRegistry;
 
@@ -55,6 +58,38 @@ namespace Nelir.ViewModels
 
         [ObservableProperty]
         private TranslationRow? _selectedRow;
+
+        [ObservableProperty]
+        private string _openRouterApiKey = string.Empty;
+
+        [ObservableProperty]
+        private string _preferredModel1 = string.Empty;
+
+        [ObservableProperty]
+        private string _preferredModel2 = string.Empty;
+
+        [ObservableProperty]
+        private string _preferredModel3 = string.Empty;
+
+        [ObservableProperty]
+        private bool _isRefreshingModels;
+
+        public ObservableCollection<string> AvailableFreeModels { get; } = new();
+
+        [ObservableProperty]
+        private bool _isAiSuggestionPanelOpen;
+
+        [ObservableProperty]
+        private bool _isAiSuggestionLoading;
+
+        [ObservableProperty]
+        private string _aiSuggestionStatusText = string.Empty;
+
+        [ObservableProperty]
+        private AiSuggestionResult? _aiSuggestionResult;
+
+        [ObservableProperty]
+        private string? _aiSuggestionErrorMessage;
 
         public event Action<TranslationRow>? ScrollToRowRequested;
 
@@ -157,6 +192,7 @@ namespace Nelir.ViewModels
             _settingsService = new AppSettingsService();
             _undoRedoService = new UndoRedoService();
             _themeService = new ThemeService();
+            _aiSuggestionService = new AiSuggestionService();
             
             _project = new ProjectState();
             _glossary = new GlossaryService();
@@ -174,6 +210,15 @@ namespace Nelir.ViewModels
             _showSpeakerColumn = settings.ShowSpeakerColumn;
             _showMtlColumn = settings.ShowMtlColumn;
             _autoSaveInterval = settings.AutoSaveIntervalSeconds;
+            _openRouterApiKey = settings.OpenRouterApiKey ?? string.Empty;
+            _preferredModel1 = settings.PreferredModel1 ?? string.Empty;
+            _preferredModel2 = settings.PreferredModel2 ?? string.Empty;
+            _preferredModel3 = settings.PreferredModel3 ?? string.Empty;
+
+            if (!string.IsNullOrWhiteSpace(_openRouterApiKey))
+            {
+                _ = InitializeModelsAsync();
+            }
 
             // Load recent projects
             LoadRecentProjectsList();
@@ -202,6 +247,11 @@ namespace Nelir.ViewModels
         {
             RowsView.Refresh();
             OnPropertyChanged(nameof(VisibleRowCountText));
+        }
+
+        partial void OnSelectedRowChanged(TranslationRow? value)
+        {
+            CancelAndCloseAiSuggestion();
         }
 
         partial void OnSearchQueryChanged(string value)
@@ -860,6 +910,124 @@ namespace Nelir.ViewModels
             MessageBox.Show($"Đã tự động điền {emptyRows.Count} dòng bằng bản dịch máy (MTL).", "Thành Công", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
+        private void CancelAndCloseAiSuggestion()
+        {
+            _currentSuggestionCts?.Cancel();
+            _currentSuggestionCts = null;
+            IsAiSuggestionPanelOpen = false;
+            IsAiSuggestionLoading = false;
+            AiSuggestionResult = null;
+            _activeSuggestionRow = null;
+        }
+
+        [RelayCommand]
+        private void CloseAiSuggestionPanel()
+        {
+            IsAiSuggestionPanelOpen = false;
+        }
+
+        [RelayCommand]
+        private void ApplyAiSuggestion(AiSuggestionOption option)
+        {
+            if (_activeSuggestionRow != null && option != null)
+            {
+                _activeSuggestionRow.TranslationText = option.TranslatedText;
+                CancelAndCloseAiSuggestion();
+            }
+        }
+
+        private async Task FetchAiSuggestionInternalAsync(TranslationRow targetRow, CancellationToken ct)
+        {
+            IsAiSuggestionLoading = true;
+            AiSuggestionErrorMessage = null;
+            AiSuggestionResult = null;
+            AiSuggestionStatusText = "Đang kiểm tra API Key...";
+
+            if (string.IsNullOrWhiteSpace(OpenRouterApiKey))
+            {
+                AiSuggestionErrorMessage = "Vui lòng cấu hình OpenRouter API Key trong Cài đặt trước.";
+                IsAiSuggestionLoading = false;
+                return;
+            }
+
+            try
+            {
+                var preceding = Project.AllRows
+                    .Where(r => r.SourceFile == targetRow.SourceFile && r.RowIndex < targetRow.RowIndex && r.RowType != RowType.SectionHeader)
+                    .OrderByDescending(r => r.RowIndex)
+                    .Take(5)
+                    .Reverse()
+                    .Select(r => (raw: r.RawText, mtl: r.MtlText))
+                    .ToList();
+
+                var progress = new Progress<string>(status =>
+                {
+                    AiSuggestionStatusText = status;
+                });
+
+                var preferredModels = new List<string> { PreferredModel1, PreferredModel2, PreferredModel3 };
+                var result = await _aiSuggestionService.GetSuggestionAsync(
+                    OpenRouterApiKey,
+                    targetRow.RawText,
+                    targetRow.Speaker,
+                    preceding,
+                    progress,
+                    preferredModels,
+                    ct);
+
+                if (!ct.IsCancellationRequested)
+                {
+                    AiSuggestionResult = result;
+                    IsAiSuggestionLoading = false;
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                // Swallowed if cancelled
+            }
+            catch (Exception ex)
+            {
+                if (!ct.IsCancellationRequested)
+                {
+                    AiSuggestionErrorMessage = ex.Message;
+                    IsAiSuggestionLoading = false;
+                }
+            }
+        }
+
+        [RelayCommand]
+        private async Task RequestAiSuggestion(TranslationRow targetRow)
+        {
+            if (targetRow == null) return;
+
+            if (_activeSuggestionRow == targetRow && (AiSuggestionResult != null || IsAiSuggestionLoading))
+            {
+                IsAiSuggestionPanelOpen = true;
+                return;
+            }
+
+            _currentSuggestionCts?.Cancel();
+            _currentSuggestionCts = new System.Threading.CancellationTokenSource();
+            var ct = _currentSuggestionCts.Token;
+
+            _activeSuggestionRow = targetRow;
+            IsAiSuggestionPanelOpen = true;
+
+            await FetchAiSuggestionInternalAsync(targetRow, ct);
+        }
+
+        [RelayCommand]
+        private async Task RegenerateAiSuggestion()
+        {
+            if (_activeSuggestionRow == null) return;
+
+            _currentSuggestionCts?.Cancel();
+            _currentSuggestionCts = new System.Threading.CancellationTokenSource();
+            var ct = _currentSuggestionCts.Token;
+
+            await FetchAiSuggestionInternalAsync(_activeSuggestionRow, ct);
+        }
+
         [RelayCommand]
         private void OpenSettings()
         {
@@ -918,6 +1086,97 @@ namespace Nelir.ViewModels
             _themeService.ApplyTheme(value);
             _settingsService.CurrentSettings.IsDarkMode = value;
             _settingsService.SaveSettings();
+        }
+
+        partial void OnOpenRouterApiKeyChanged(string value)
+        {
+            _settingsService.CurrentSettings.OpenRouterApiKey = value;
+            _settingsService.SaveSettings();
+
+            if (!string.IsNullOrWhiteSpace(value))
+            {
+                _ = InitializeModelsAsync();
+            }
+        }
+
+        partial void OnPreferredModel1Changed(string value)
+        {
+            _settingsService.CurrentSettings.PreferredModel1 = value;
+            _settingsService.SaveSettings();
+        }
+
+        partial void OnPreferredModel2Changed(string value)
+        {
+            _settingsService.CurrentSettings.PreferredModel2 = value;
+            _settingsService.SaveSettings();
+        }
+
+        partial void OnPreferredModel3Changed(string value)
+        {
+            _settingsService.CurrentSettings.PreferredModel3 = value;
+            _settingsService.SaveSettings();
+        }
+
+        private async Task InitializeModelsAsync()
+        {
+            try
+            {
+                var models = await _aiSuggestionService.GetFreeModelsExternalAsync(OpenRouterApiKey);
+                App.Current.Dispatcher.Invoke(() =>
+                {
+                    AvailableFreeModels.Clear();
+                    AvailableFreeModels.Add(string.Empty);
+                    foreach (var m in models)
+                    {
+                        AvailableFreeModels.Add(m);
+                    }
+                });
+            }
+            catch
+            {
+                // Silent background load
+            }
+        }
+
+        partial void OnIsRefreshingModelsChanged(bool value)
+        {
+            RefreshAvailableModelsCommand.NotifyCanExecuteChanged();
+        }
+
+        private bool CanRefreshAvailableModels() => !IsRefreshingModels;
+
+        [RelayCommand(CanExecute = nameof(CanRefreshAvailableModels))]
+        private async Task RefreshAvailableModels()
+        {
+            if (string.IsNullOrWhiteSpace(OpenRouterApiKey))
+            {
+                MessageBox.Show("Vui lòng cấu hình OpenRouter API Key trước khi làm mới danh sách model.", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            IsRefreshingModels = true;
+            try
+            {
+                _aiSuggestionService.ClearCache();
+                var models = await _aiSuggestionService.GetFreeModelsExternalAsync(OpenRouterApiKey);
+                
+                AvailableFreeModels.Clear();
+                AvailableFreeModels.Add(string.Empty);
+                foreach (var m in models)
+                {
+                    AvailableFreeModels.Add(m);
+                }
+                
+                MessageBox.Show($"Đã tải thành công {models.Count} model miễn phí từ OpenRouter.", "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Lỗi tải danh sách model: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            finally
+            {
+                IsRefreshingModels = false;
+            }
         }
 
         [RelayCommand]

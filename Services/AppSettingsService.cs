@@ -19,6 +19,10 @@ namespace Nelir.Services
         public bool ShowSpeakerColumn { get; set; } = true;
         public bool ShowMtlColumn { get; set; } = true;
         public System.Collections.Generic.List<string> RecentProjects { get; set; } = new();
+        public string OpenRouterApiKey { get; set; } = string.Empty;
+        public string PreferredModel1 { get; set; } = string.Empty;
+        public string PreferredModel2 { get; set; } = string.Empty;
+        public string PreferredModel3 { get; set; } = string.Empty;
     }
 
     public class AppSettingsService

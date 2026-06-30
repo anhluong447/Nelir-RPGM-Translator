@@ -239,6 +239,33 @@ namespace Nelir
                 }
                 Console.WriteLine("ProjectDiffService compare verification passed.");
 
+                // 7. Test AiSuggestionService JSON cleaning & parsing
+                var aiService = new Services.AiSuggestionService();
+                
+                // Test CleanJsonContent
+                string wrappedJson = "```json\n{\n  \"options\": [\n    { \"translated_text\": \"Xin chào\", \"rationale\": \"Lý do 1\" }\n  ],\n  \"terminology_notes\": \"Ghi chú\"\n}\n```";
+                string cleaned = aiService.CleanJsonContent(wrappedJson);
+                if (!cleaned.StartsWith("{") || !cleaned.EndsWith("}"))
+                {
+                    throw new Exception("CleanJsonContent failed to strip markdown code fences correctly");
+                }
+
+                // Test ParseStructuredResponse with standard JSON
+                var parsedResult = aiService.ParseStructuredResponse(wrappedJson);
+                if (parsedResult.Options.Count != 1 || parsedResult.Options[0].TranslatedText != "Xin chào" || parsedResult.TerminologyNotes != "Ghi chú")
+                {
+                    throw new Exception("ParseStructuredResponse failed to parse standard JSON response");
+                }
+
+                // Test ParseStructuredResponse with fallback regex parser (slightly malformed JSON)
+                string malformedJson = "{\n  \"options\": [\n    { \"translated_text\": \"Xin chào\", \"rationale\": \"Lý do 1\" \n  ],\n  \"terminology_notes\": \"Ghi chú\"\n}";
+                var fallbackResult = aiService.ParseStructuredResponse(malformedJson);
+                if (fallbackResult.Options.Count != 1 || fallbackResult.Options[0].TranslatedText != "Xin chào" || fallbackResult.TerminologyNotes != "Ghi chú")
+                {
+                    throw new Exception("ParseStructuredResponse fallback parser failed to handle slightly malformed JSON response");
+                }
+                Console.WriteLine("AiSuggestionService diagnostics verification passed.");
+
                 Console.WriteLine("DIAGNOSTICS PASSED SUCCESSFULLY!");
             }
             catch (Exception ex)

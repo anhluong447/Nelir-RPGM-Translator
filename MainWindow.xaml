@@ -26,6 +26,7 @@
         <converters:NullOrEmptyToVisibilityConverter x:Key="NullOrEmptyToVisibilityConverter"/>
         <converters:BoolToTextWrappingConverter x:Key="BoolToTextWrappingConverter"/>
         <converters:BoolToWrapIconConverter x:Key="BoolToWrapIconConverter"/>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
     </Window.Resources>
 
     <Window.InputBindings>
@@ -499,10 +500,124 @@
                                 <RowDefinition Height="*"/>
                             </Grid.RowDefinitions>
 
-                            <TextBlock Grid.Row="0" Text="BẢN DỊCH CHÍNH THỨC" Style="{StaticResource TextLabel}" Margin="0,0,0,8"/>
+                            <DockPanel Grid.Row="0" Margin="0,0,0,8" LastChildFill="False">
+                                <TextBlock Text="BẢN DỊCH CHÍNH THỨC" Style="{StaticResource TextLabel}" VerticalAlignment="Center"/>
+                                <Button x:Name="AiSuggestionButton"
+                                        DockPanel.Dock="Right"
+                                        Content="💡"
+                                        Style="{StaticResource ButtonGhost}"
+                                        Width="28" Height="28" Padding="0"
+                                        ToolTip="Gợi ý dịch bằng AI (dựa trên 5 dòng trước đó)"
+                                        Command="{Binding DataContext.RequestAiSuggestionCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                        CommandParameter="{Binding}"/>
+                            </DockPanel>
 
                             <TextBox Grid.Row="1" Text="{Binding TranslationText, UpdateSourceTrigger=PropertyChanged}"
                                      Style="{StaticResource InputMultiline}" AcceptsReturn="True" TextWrapping="Wrap"/>
+
+                            <!-- AI Suggestion Popup -->
+                            <Popup IsOpen="{Binding DataContext.IsAiSuggestionPanelOpen, RelativeSource={RelativeSource AncestorType=Window}}"
+                                   PlacementTarget="{Binding ElementName=AiSuggestionButton}"
+                                   Placement="Bottom"
+                                   StaysOpen="False"
+                                   AllowsTransparency="True"
+                                   PopupAnimation="Slide">
+                                <Border DataContext="{Binding DataContext, RelativeSource={RelativeSource AncestorType=Window}}"
+                                        Background="{DynamicResource BgSurface}" 
+                                        BorderBrush="{DynamicResource BorderStrong}" 
+                                        BorderThickness="1" 
+                                        CornerRadius="{StaticResource RadiusMd}" 
+                                        Padding="12" 
+                                        Width="400">
+                                    <Border.Effect>
+                                        <DropShadowEffect Color="#000000" Opacity="0.15" BlurRadius="12" ShadowDepth="4" Direction="270"/>
+                                    </Border.Effect>
+                                    <Grid Width="376" MinHeight="100">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="*"/>
+                                        </Grid.RowDefinitions>
+
+                                        <!-- Header -->
+                                        <DockPanel Grid.Row="0" Margin="0,0,0,10" LastChildFill="False">
+                                            <TextBlock Text="AI Gợi ý dịch" Style="{StaticResource TextHeadingSm}" VerticalAlignment="Center"/>
+                                            <Button Content="✕"
+                                                    DockPanel.Dock="Right"
+                                                    Style="{StaticResource ButtonGhost}"
+                                                    Width="24" Height="24" Padding="0"
+                                                    Command="{Binding CloseAiSuggestionPanelCommand}"
+                                                    VerticalAlignment="Center"
+                                                    ToolTip="Đóng bảng gợi ý"/>
+                                            <Button Content="⟳"
+                                                    DockPanel.Dock="Right"
+                                                    Style="{StaticResource ButtonGhost}"
+                                                    Width="24" Height="24" Padding="0" Margin="0,0,6,0"
+                                                    Command="{Binding RegenerateAiSuggestionCommand}"
+                                                    VerticalAlignment="Center"
+                                                    ToolTip="Chạy lại gợi ý / Đổi model"/>
+                                        </DockPanel>
+
+                                        <!-- Content Area -->
+                                        <Grid Grid.Row="1">
+                                            <!-- Loading State -->
+                                            <StackPanel Visibility="{Binding IsAiSuggestionLoading, Converter={StaticResource BoolToVisibilityConverter}}"
+                                                        VerticalAlignment="Center" HorizontalAlignment="Center" Margin="20">
+                                                <ProgressBar IsIndeterminate="True" Width="100" Height="4" Margin="0,0,0,8" Foreground="{DynamicResource Accent}"/>
+                                                <TextBlock Text="{Binding AiSuggestionStatusText}" Style="{StaticResource TextCaption}" Foreground="{DynamicResource TextSecondary}" HorizontalAlignment="Center"/>
+                                            </StackPanel>
+
+                                            <!-- Error State -->
+                                            <StackPanel Visibility="{Binding AiSuggestionErrorMessage, Converter={StaticResource NullToVisibilityConverter}}"
+                                                        Margin="0,10">
+                                                <TextBlock Text="Đã xảy ra lỗi:" Style="{StaticResource TextLabel}" Foreground="{DynamicResource Danger}" Margin="0,0,0,4"/>
+                                                <TextBlock Text="{Binding AiSuggestionErrorMessage}" Style="{StaticResource TextBody}" Foreground="{DynamicResource Danger}" TextWrapping="Wrap" Margin="0,0,0,10"/>
+                                                <Button Content="Thử lại" Style="{StaticResource ButtonPrimary}" Command="{Binding RegenerateAiSuggestionCommand}" HorizontalAlignment="Left"/>
+                                            </StackPanel>
+
+                                            <!-- Result State -->
+                                            <StackPanel Visibility="{Binding AiSuggestionResult, Converter={StaticResource NullToVisibilityConverter}}">
+                                                <ItemsControl ItemsSource="{Binding AiSuggestionResult.Options}">
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <Border Background="{DynamicResource BgSunken}" CornerRadius="{StaticResource RadiusSm}"
+                                                                    BorderBrush="{DynamicResource BorderDefault}" BorderThickness="1"
+                                                                    Padding="10" Margin="0,0,0,8">
+                                                                <Grid>
+                                                                    <Grid.RowDefinitions>
+                                                                        <RowDefinition Height="Auto"/>
+                                                                        <RowDefinition Height="Auto"/>
+                                                                        <RowDefinition Height="Auto"/>
+                                                                    </Grid.RowDefinitions>
+                                                                    <TextBlock Grid.Row="0" Text="{Binding TranslatedText}" TextWrapping="Wrap" Style="{StaticResource TextBody}" FontWeight="Bold"/>
+                                                                    <TextBlock Grid.Row="1" Text="{Binding Rationale}" TextWrapping="Wrap" Style="{StaticResource TextCaption}"
+                                                                               Foreground="{DynamicResource TextSecondary}" Margin="0,4,0,8"/>
+                                                                    <Button Grid.Row="2" Content="Dùng bản này" Style="{StaticResource ButtonSecondary}"
+                                                                            HorizontalAlignment="Right" Padding="10,4" Height="28"
+                                                                            Command="{Binding DataContext.ApplyAiSuggestionCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                                            CommandParameter="{Binding}"/>
+                                                                </Grid>
+                                                            </Border>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+
+                                                <!-- Terminology Notes -->
+                                                <StackPanel Visibility="{Binding AiSuggestionResult.TerminologyNotes, Converter={StaticResource NullToVisibilityConverter}}" Margin="0,4,0,0">
+                                                    <TextBlock Text="Lưu ý thuật ngữ:" Style="{StaticResource TextLabel}" Margin="0,0,0,4"/>
+                                                    <Border Background="{DynamicResource SecondaryAccentMuted}" CornerRadius="{StaticResource RadiusSm}" Padding="8" BorderBrush="{DynamicResource SecondaryAccent}" BorderThickness="1,0,0,0">
+                                                        <TextBlock Text="{Binding AiSuggestionResult.TerminologyNotes}" Style="{StaticResource TextCaption}" Foreground="{DynamicResource TextPrimary}" TextWrapping="Wrap"/>
+                                                    </Border>
+                                                </StackPanel>
+
+                                                <!-- Model Used Footer -->
+                                                <TextBlock Text="{Binding AiSuggestionResult.ModelUsed, StringFormat='Model: {0}'}" 
+                                                           Style="{StaticResource TextCaption}" Foreground="{DynamicResource TextTertiary}" 
+                                                           HorizontalAlignment="Right" Margin="0,8,0,0"/>
+                                            </StackPanel>
+                                        </Grid>
+                                    </Grid>
+                                </Border>
+                            </Popup>
                         </Grid>
                     </Grid>
                 </Border>

@@ -18,6 +18,7 @@ namespace Nelir.Services
         public double DataGridFontSize { get; set; } = 13;
         public bool ShowSpeakerColumn { get; set; } = true;
         public bool ShowMtlColumn { get; set; } = true;
+        public System.Collections.Generic.List<string> RecentProjects { get; set; } = new();
     }
 
     public class AppSettingsService
@@ -70,6 +71,29 @@ namespace Nelir.Services
             {
                 Console.WriteLine($"Failed to save settings: {ex.Message}");
             }
+        }
+
+        public void AddRecentProject(string path)
+        {
+            if (string.IsNullOrEmpty(path)) return;
+
+            if (CurrentSettings.RecentProjects == null)
+            {
+                CurrentSettings.RecentProjects = new System.Collections.Generic.List<string>();
+            }
+
+            CurrentSettings.RecentProjects.RemoveAll(p => p.Equals(path, StringComparison.OrdinalIgnoreCase));
+            CurrentSettings.RecentProjects.Insert(0, path);
+
+            // Keep only existing files
+            CurrentSettings.RecentProjects.RemoveAll(p => !File.Exists(p));
+
+            if (CurrentSettings.RecentProjects.Count > 8)
+            {
+                CurrentSettings.RecentProjects = CurrentSettings.RecentProjects.GetRange(0, 8);
+            }
+
+            SaveSettings();
         }
     }
 }

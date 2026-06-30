@@ -93,10 +93,9 @@ namespace Nelir
                 
                 var exporter = new ExportService();
                 
-                // 1. Test game replacement files
-                exporter.ExportToGameFiles(project, outputFolder);
-                
+                // 1. Test game replacement files (structured output per file)
                 string exportedMapFile = Path.Combine(outputFolder, "Map001.json");
+                exporter.ExportFileStructured(project, "Map001.json", exportedMapFile);
                 if (!File.Exists(exportedMapFile))
                 {
                     throw new FileNotFoundException("Exported Map001.json was not created!");
@@ -189,6 +188,56 @@ namespace Nelir
                     throw new Exception("Deserialized TranslationText does not match");
                 }
                 Console.WriteLine("Nel project file save/load verification passed.");
+
+                // 5. Test ParseFileResult error handling
+                string corruptJsonFile = Path.Combine(outputFolder, "corrupt.json");
+                File.WriteAllText(corruptJsonFile, "{ \"invalid\": json }"); // malformed JSON
+                var parseCorruptResult = parser.ParseFileResult(corruptJsonFile);
+                if (parseCorruptResult.IsSuccess)
+                {
+                    throw new Exception("Expected ParseFileResult on corrupt JSON to fail, but it returned success.");
+                }
+                if (string.IsNullOrEmpty(parseCorruptResult.ErrorMessage))
+                {
+                    throw new Exception("Expected ParseFileResult error message on corrupt JSON, but it was empty.");
+                }
+                Console.WriteLine("ParseFileResult corrupt JSON handling passed.");
+
+                // 6. Test ProjectDiffService
+                var oldProject = new ProjectState();
+                var rowUnchanged = new TranslationRow { SourceFile = "Map001", EventId = 1, RawText = "Unchanged", RowType = RowType.Dialog, TranslationText = "Đã dịch" };
+                var rowChanged = new TranslationRow { SourceFile = "Map001", EventId = 2, RawText = "Old Text", RowType = RowType.Dialog, TranslationText = "Dịch cũ" };
+                var rowRemoved = new TranslationRow { SourceFile = "Map001", EventId = 3, RawText = "Removed Text", RowType = RowType.Dialog, TranslationText = "Dịch cũ 2" };
+
+                oldProject.AllRows.AddRange(new[] { rowUnchanged, rowChanged, rowRemoved });
+
+                var newRawProj = new ProjectState();
+                var newRowUnchanged = new TranslationRow { SourceFile = "Map001", EventId = 1, RawText = "Unchanged", RowType = RowType.Dialog };
+                var newRowChanged = new TranslationRow { SourceFile = "Map001", EventId = 2, RawText = "New Text", RowType = RowType.Dialog }; // Raw text changed
+                var rowNew = new TranslationRow { SourceFile = "Map001", EventId = 4, RawText = "New Row", RowType = RowType.Dialog }; // New row added
+
+                newRawProj.AllRows.AddRange(new[] { newRowUnchanged, newRowChanged, rowNew });
+
+                var diffService = new Services.ProjectDiffService();
+                var diffResult = diffService.Compare(oldProject, newRawProj);
+
+                if (diffResult.TotalNew != 1 || diffResult.NewRows[0].UniqueKey != "Map001::4::0::0::0")
+                {
+                    throw new Exception($"Expected 1 new row with key Map001::4::0::0::0, got {diffResult.TotalNew} rows.");
+                }
+                if (diffResult.TotalRemoved != 1 || diffResult.RemovedRows[0].UniqueKey != "Map001::3::0::0::0")
+                {
+                    throw new Exception($"Expected 1 removed row with key Map001::3::0::0::0, got {diffResult.TotalRemoved} rows.");
+                }
+                if (diffResult.TotalChanged != 1 || diffResult.ChangedRows[0].OldRow.UniqueKey != "Map001::2::0::0::0" || diffResult.ChangedRows[0].NewRow.RawText != "New Text")
+                {
+                    throw new Exception($"Expected 1 changed row with key Map001::2::0::0::0, got {diffResult.TotalChanged} rows.");
+                }
+                if (diffResult.UnchangedRows.Count != 1 || diffResult.UnchangedRows[0].TranslationText != "Đã dịch")
+                {
+                    throw new Exception("Expected unchanged row to carry forward translation text.");
+                }
+                Console.WriteLine("ProjectDiffService compare verification passed.");
 
                 Console.WriteLine("DIAGNOSTICS PASSED SUCCESSFULLY!");
             }

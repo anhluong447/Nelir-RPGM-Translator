@@ -141,9 +141,32 @@ namespace Nelir.Services
             {
                 // Fallback / Log
                 Console.WriteLine($"Error parsing RPGMaker file {fileName}: {ex.Message}");
+                throw;
             }
 
             return rows;
+        }
+
+        public RpgmParseResult ParseFileResult(string filePath)
+        {
+            var result = new RpgmParseResult
+            {
+                FileName = Path.GetFileName(filePath),
+                FilePath = filePath
+            };
+
+            try
+            {
+                result.Rows = ParseFile(filePath);
+                result.IsSuccess = true;
+            }
+            catch (Exception ex)
+            {
+                result.IsSuccess = false;
+                result.ErrorMessage = ex.Message;
+            }
+
+            return result;
         }
 
         private void ParseCommandList(JsonElement list, List<TranslationRow> rows, string fileName, int eventId, string eventName, int pageIndex, ref int globalIndex)
@@ -395,6 +418,15 @@ namespace Nelir.Services
                 }
             }
         }
+    }
+
+    public class RpgmParseResult
+    {
+        public string FileName { get; set; } = string.Empty;
+        public string FilePath { get; set; } = string.Empty;
+        public List<TranslationRow> Rows { get; set; } = new();
+        public bool IsSuccess { get; set; }
+        public string? ErrorMessage { get; set; }
     }
 }
 

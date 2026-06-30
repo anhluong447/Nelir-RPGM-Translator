@@ -26,6 +26,11 @@ namespace Nelir.Models
 
         public string DisplayText => $"{FileName} ({TranslatedRows} / {TotalRows} dòng)";
 
+        public int UntranslatedCount => TotalRows - TranslatedRows;
+        public string DisplayLabel => UntranslatedCount > 0
+            ? $"{FileName} ({UntranslatedCount} dòng chưa dịch)"
+            : FileName;
+
         public event PropertyChangedEventHandler? PropertyChanged;
 
         protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)

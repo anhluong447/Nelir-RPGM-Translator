@@ -79,6 +79,18 @@
                                         <TextBlock Text="&#xE8DA;" Style="{StaticResource IconGlyph}" FontSize="14"/>
                                     </MenuItem.Icon>
                                 </MenuItem>
+                                <MenuItem Header="Dự án gần đây" ItemsSource="{Binding RecentProjects}">
+                                    <MenuItem.Icon>
+                                        <TextBlock Text="&#xE8F4;" Style="{StaticResource IconGlyph}" FontSize="14"/>
+                                    </MenuItem.Icon>
+                                    <MenuItem.ItemContainerStyle>
+                                        <Style TargetType="MenuItem">
+                                            <Setter Property="Header" Value="{Binding}"/>
+                                            <Setter Property="Command" Value="{Binding Data.LoadRecentProjectCommand, Source={StaticResource DataContextProxy}}"/>
+                                            <Setter Property="CommandParameter" Value="{Binding}"/>
+                                        </Style>
+                                    </MenuItem.ItemContainerStyle>
+                                </MenuItem>
                                 <MenuItem Header="Lưu dự án (.nel)" Command="{Binding SaveProjectCommand}" IsEnabled="{Binding IsProjectLoaded}">
                                     <MenuItem.Icon>
                                         <TextBlock Text="&#xE74E;" Style="{StaticResource IconGlyph}" FontSize="14"/>
@@ -122,6 +134,12 @@
                                           ToolTip="Copy MTL vào tất cả dòng chưa dịch trong file đang chọn (không ghi đè dòng đã có bản dịch)">
                                     <MenuItem.Icon>
                                         <TextBlock Text="&#xE945;" Style="{StaticResource IconGlyph}" FontSize="14"/>
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                                <Separator/>
+                                <MenuItem Header="Kiểm tra cập nhật game (RAW)" Command="{Binding CheckForUpdatesCommand}" IsEnabled="{Binding IsProjectLoaded}">
+                                    <MenuItem.Icon>
+                                        <TextBlock Text="&#xE777;" Style="{StaticResource IconGlyph}" FontSize="14"/>
                                     </MenuItem.Icon>
                                 </MenuItem>
                             </ContextMenu>

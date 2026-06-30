@@ -79,7 +79,7 @@
                 <ListBox.ItemTemplate>
                     <DataTemplate>
                         <CheckBox IsChecked="{Binding IsSelected}" Margin="4,4,4,4" Checked="CheckBox_CheckChanged" Unchecked="CheckBox_CheckChanged">
-                            <TextBlock Text="{Binding DisplayText}" Style="{StaticResource TextBody}" VerticalAlignment="Center"/>
+                            <TextBlock Text="{Binding DisplayLabel}" Style="{StaticResource TextBody}" VerticalAlignment="Center"/>
                         </CheckBox>
                     </DataTemplate>
                 </ListBox.ItemTemplate>

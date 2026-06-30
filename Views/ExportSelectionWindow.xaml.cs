@@ -148,6 +148,22 @@ namespace Nelir.Views
                 return;
             }
 
+            int totalUntranslated = selectedItems.Sum(item => item.UntranslatedCount);
+            if (totalUntranslated > 0)
+            {
+                var result = MessageBox.Show(
+                    $"Các tệp đã chọn vẫn còn {totalUntranslated} dòng chưa được dịch.\nBạn có chắc chắn muốn xuất dữ liệu bản dịch hiện tại?",
+                    "Cảnh báo: Dữ liệu chưa hoàn chỉnh",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Warning,
+                    MessageBoxResult.No);
+
+                if (result != MessageBoxResult.Yes)
+                {
+                    return;
+                }
+            }
+
             try
             {
                 Directory.CreateDirectory(exportPath);
